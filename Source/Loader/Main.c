@@ -23,12 +23,17 @@
  *        distribution.
  */
 
-#include <MiniUART.h>
+#include <UART.h>
 
 /*
  * The Main function for the laoder.
  */
 void Main()
 {
-    MiniUARTInit();
+    UARTInit();
+
+    while(1)
+    {
+        UARTTransmit((uint8_t)('H'));
+    }
 }

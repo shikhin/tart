@@ -97,7 +97,7 @@ clean:
 # CC.
 %.o: %.c Makefile
 	@echo -e "  $(Blue)[CC]$(End)   " $<
-	@$(ARMGNU)-gcc $(CFLAGS) -ISource/Loader/Include -MMD -MP -c $< -o $@
+	@$(ARMGNU)-gcc $(CFLAGS) -ISource/Loader/Include -ISource/Include -MMD -MP -c $< -o $@
 
 # AS.
 %.o: %.S Makefile

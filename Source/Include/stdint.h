@@ -1,5 +1,5 @@
-/*
- * Mini UART initialization & communication functions.
+/* 
+ * This contains standard integer types (intx_t, uintx_t) definitions.
  *
  * Copyright (c) 2013, Shikhin Sethi
  * 
@@ -23,12 +23,25 @@
  *        distribution.
  */
 
-#include <MiniUART.h>
+#ifndef _STDINT_H
+#define _STDINT_H
 
-/*
- * Initializes the mini-UART, making it available for communication.
- */
-void MiniUARTInit()
-{
-    
-}
+/* intx_t */
+typedef signed char int8_t;
+typedef short int int16_t;
+typedef int int32_t;
+typedef long long int int64_t;
+
+/* uintx_t */
+typedef unsigned char uint8_t;
+typedef unsigned short int uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long int uint64_t;
+
+/* xptr_t */
+typedef int intptr_t;
+
+typedef unsigned int uintptr_t;
+typedef uint32_t size_t;
+
+#endif /* _STDINT_H */
