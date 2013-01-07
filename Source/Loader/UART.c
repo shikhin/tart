@@ -90,3 +90,26 @@ void UARTTransmit(uint8_t Byte)
     // So transmit FIFO isn't full, transmit the byte.
     MMIORegWrite(UART0_DR, (uint32_t)Byte);
 }
+
+/*
+ * Receive a byte via UART0.
+ *
+ * Returns:
+ *    uint8_t -> Byte received.
+ */
+uint8_t UARTReceive()
+{
+    // Keep trying.
+    while(1)
+    {
+        // If receive FIFO isn't empty, break.
+        if(!(MMIORegRead(UART0_FR) & (1 << 4)))
+        {
+            // Break.
+            break;
+        }
+    }
+
+    // So receive FIFO isn't empty, receive a byte.
+    return (uint8_t)(MMIORegRead(UART0_DR));
+}

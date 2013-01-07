@@ -85,12 +85,20 @@ extern void Delay(uint32_t n);
 /*
  * Initializes the UART, making it available for communication.
  */
-void UARTInit();
+void UARTInit(void);
 
 /*
  * Transmit a byte via UART0.
  *    uint8_t Byte -> Byte to send.
  */
 void UARTTransmit(uint8_t Byte);
+
+/*
+ * Receive a byte via UART0.
+ *
+ * Returns:
+ *    uint8_t -> Byte received.
+ */
+uint8_t UARTReceive(void);
 
 #endif /* _UART_H */

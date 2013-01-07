@@ -25,8 +25,8 @@ ENTRY(Start)
 
 SECTIONS
 {
-    /* Starts at 0x8000. */
-    .text 0x8000 :
+    /* Starts at 0x200000. */
+    .text 0x200000 :
     {
         *(.text)
         *(.rodata)
@@ -39,6 +39,9 @@ SECTIONS
 
     /* The physical file ends here. */
     file_end = .; _file_end = .; __file_end = .;
+
+    /* Align to 16 byte boundary. */
+    . = ALIGN(16);
 
     .bss :
     {

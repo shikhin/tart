@@ -24,19 +24,37 @@
 @ To keep this in the first portion of the binary.
 .text
 
-@ Make Start global, and use Main from the C sources.
+@ Make Start global.
 .globl Start
 
  @ Entry point for the loader.
  @     r15 -> should begin execution at 0x8000.
 Start:
     @ Setup the stack.
-    mov sp, #0x8000
-    bl Main
+    mov sp, #0x200000
 
-@ Keep on looping.
-.Hang:
-    b .Hang
+@ Since we're loaded at 0x8000, relocate to 0x200000.
+.Relocate:
+    @ From r0 to r1.
+    mov r0, #0x8000
+    mov r1, #0x200000
+    ldr r6, =file_end
+
+.Loop:
+    @ Load multiple from r0, and store at r1.
+    ldmia r0!, {r2-r5}
+    stmia r1!, {r2-r5}
+
+    @ If we're still below file_end, loop.
+    cmp r1, r6
+    blo .Loop
+
+    @ TODO: Clear out bss.
+
+    ldr r0, =Main
+    bx r0
+
+@ DON'T RETURN HERE.
 
 @ Make MMIORegWrite & MMIORegRead & Delay global.
 .globl MMIORegWrite
@@ -60,7 +78,7 @@ MMIORegWrite:
 MMIORegRead:
     @ Just do a plain read. This function ensures the compiler doesn't optimize this out,
     @ and that they are perfect 32-bit read.
-    str r0, [r0]
+    ldr r0, [r0]
     bx lr
 
  @ Create a delay for 'n' cycles.

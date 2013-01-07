@@ -30,17 +30,11 @@ void Main()
 {
     UARTInit();
 
-    UARTTransmit((uint8_t)('H'));
-    UARTTransmit((uint8_t)('e'));
-    UARTTransmit((uint8_t)('l'));
-    UARTTransmit((uint8_t)('l'));
-    UARTTransmit((uint8_t)('o'));
-    UARTTransmit((uint8_t)(','));
-    UARTTransmit((uint8_t)(' '));
-    UARTTransmit((uint8_t)('W'));
-    UARTTransmit((uint8_t)('o'));
-    UARTTransmit((uint8_t)('r'));
-    UARTTransmit((uint8_t)('l'));
-    UARTTransmit((uint8_t)('d'));
-    UARTTransmit((uint8_t)('!'));    
+    // Just output what we receive.
+    while(1)
+    {
+        UARTTransmit(UARTReceive());
+    }
+
+    // TODO: Tart loader protocol.
 }
