@@ -210,7 +210,7 @@ static int OpenSerialConnection(const char *Device)
 /* 
  * Read bytes via the serial connection.
  *     int Conn     -> connection handle where to read to.
- *     char *Stream -> stream from where to store the bytes.
+ *     unsigned char *Stream -> stream from where to store the bytes.
  *     int NBytes   -> number of bytes to read.
  *
  * Returns:
@@ -239,13 +239,13 @@ static inline int ReadBytes(int Conn, unsigned char *Stream, int NBytes)
 /* 
  * Write bytes via the serial connection.
  *     int Conn     -> connection handle where to write to.
- *     char *Stream -> stream from where to get the bytes.
+ *     const unsigned char *Stream -> stream from where to get the bytes.
  *     int NBytes   -> number of bytes to write.
  *
  * Returns:
  *     int          -> 0 for success, -1 for failure.
  */
-static inline int WriteBytes(int Conn, unsigned char *Stream, int NBytes)
+static inline int WriteBytes(int Conn, const unsigned char *Stream, int NBytes)
 {
     // Write all the bytes.
     while(NBytes)
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
 
     // Process.
     // Open the kernel for read.
-    FILE *Kernel = fopen(Config.Kernel, "r");
+    FILE *Kernel = fopen(Config.Kernel, "rb");
     if(!Kernel)
     {
         close(Conn);
@@ -349,6 +349,32 @@ int main(int argc, char *argv[])
         perror("Failed to open the kernel");
         exit(EXIT_FAILURE);
     }
+
+    // A simple buffer for the beginnning.
+    union Data
+    {
+        unsigned char Byte[4];
+        int DWord;
+    } Buffer;
+
+    // Get the version.
+    ReadBytes(Conn, (unsigned char*)&Buffer.Byte, 2);
+
+    if(Buffer.Byte[0] != VERSION_MAJOR ||
+       Buffer.Byte[1] != VERSION_MINOR)
+    {
+        // Transfer "NO".
+        Buffer.Byte[0] = 'N'; Buffer.Byte[1] = 'O';
+        WriteBytes(Conn, (const unsigned char*)&Buffer.Byte, 2);
+
+        printf("Tart version (%d.%d) on Raspberry Pi does not match with Crust version (%d.%d).\n", 
+               Buffer.Byte[0], Buffer.Byte[1], VERSION_MAJOR, VERSION_MINOR);
+        exit(EXIT_FAILURE);
+    }
+  
+    // Transfer "OK".
+    Buffer.Byte[0] = 'O'; Buffer.Byte[1] = 'K';
+    WriteBytes(Conn, (const unsigned char*)&Buffer.Byte, 2);
 
     // Transfer the file.
     TransferFile(Conn, Kernel);

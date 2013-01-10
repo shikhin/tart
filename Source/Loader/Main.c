@@ -32,13 +32,18 @@
  */
 void Main()
 {
+    // Initialize UART.
     UARTInit();
 
-    // Just output what we receive.
-    while(1)
-    {
-        UARTTransmit(UARTReceive());
-    }
+    // Tart loader protocol.
 
-    // TODO: Tart loader protocol.
+    // Output major version, followed by minor.
+    UARTTransmit(VERSION_MAJOR); UARTTransmit(VERSION_MINOR);
+
+    // If 'OK' wasn't transmitted, just go into an infinite loop.
+    if((char)UARTRecieve() != 'O' || (char)UARTRecieve() != 'K')
+    {
+        // Loop.
+        for(;;);
+    }
 }
