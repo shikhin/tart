@@ -36,6 +36,8 @@
 #define FLAGS_USAGE   (1 << 1)
 #define FLAGS_HELP    (1 << 2)
 
+#define GOOD_LENGTH   (1024)
+
 typedef struct 
 {
     // Path of device, and kernel.
@@ -149,8 +151,7 @@ Config_t ParseConfig(int argc, char *argv[])
  *     char *Device -> the path of the device to open the connection with.
  *
  * Returns:
- *     int          -> file descriptor of the opened connection. 
- *                     -1 to indicate failure.
+ *     int          -> file descriptor of the opened connection.
  */
 static int OpenSerialConnection(const char *Device)
 {
@@ -161,19 +162,26 @@ static int OpenSerialConnection(const char *Device)
     int Conn = open(Device, O_RDWR | O_NOCTTY | O_NDELAY);
     if((Conn == -1) || !isatty(Conn)) 
     {
+        // Close if opened, but not a tty.
+        if(Conn != -1)
+            close(Conn);
+
         perror("Failed to open TTY port");
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     // Get the attributes.
     if(tcgetattr(Conn, &Serial) == -1)
     {
+        // Close the connection.
+        close(Conn);
+
         perror("Failed to get attributes of device");
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
-    // So, we return after 0.1 seconds.
-    Serial.c_cc[VTIME] = 1;
+    // So, we poll.
+    Serial.c_cc[VTIME] = 0;
     Serial.c_cc[VMIN] = 0;
 
     // 8N1 mode, no input/output/line processing masks.
@@ -186,14 +194,117 @@ static int OpenSerialConnection(const char *Device)
     if((cfsetispeed(&Serial, B115200) < 0) || 
        (cfsetospeed(&Serial, B115200) < 0))
     {
+        // Close the connection.
+        close(Conn);
+
         perror("Failed to set baud-rate");
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     // Write the attributes.
     tcsetattr(Conn, TCSAFLUSH, &Serial); 
 
     return Conn; 
+}
+
+/* 
+ * Read bytes via the serial connection.
+ *     int Conn     -> connection handle where to read to.
+ *     char *Stream -> stream from where to store the bytes.
+ *     int NBytes   -> number of bytes to read.
+ *
+ * Returns:
+ *     int          -> 0 for success, -1 for failure.
+ */
+static inline int ReadBytes(int Conn, unsigned char *Stream, int NBytes)
+{
+    // Read all the bytes.
+    while(NBytes)
+    {
+        // Read the bytes, get how many read.
+        int BytesRead = read(Conn, Stream, NBytes);
+        if(BytesRead < 0)
+        {
+            return -1;
+        }
+
+        // Decrement bytes left to read, increment stream pointer.
+        NBytes -= BytesRead;
+        Stream += BytesRead;
+    }
+
+    return 0;
+}
+
+/* 
+ * Write bytes via the serial connection.
+ *     int Conn     -> connection handle where to write to.
+ *     char *Stream -> stream from where to get the bytes.
+ *     int NBytes   -> number of bytes to write.
+ *
+ * Returns:
+ *     int          -> 0 for success, -1 for failure.
+ */
+static inline int WriteBytes(int Conn, unsigned char *Stream, int NBytes)
+{
+    // Write all the bytes.
+    while(NBytes)
+    {
+        // Write the bytes, get how many written.
+        int BytesWritten = write(Conn, Stream, NBytes);
+        if(BytesWritten < 0)
+        {
+            return -1;
+        }
+
+        // Decrement bytes left to write, increment stream pointer.
+        NBytes -= BytesWritten;
+        Stream += BytesWritten;
+    }
+
+    return 0;
+}
+
+/*
+ * Transfers a file via the serial connection.
+ *     int Conn   -> connection where to transfer the file to.
+ *     FILE *File -> the file to transfer.
+ *
+ * Returns:
+ *     int        -> status of transfer.
+ */ 
+static int TransferFile(int Conn, FILE *File)
+{
+    // A quick buffer on the stack of GOOD_LENGTH.
+    unsigned char Buffer[GOOD_LENGTH];
+ 
+    // Bytes read this time, and bytes to write.
+    int BytesRead;
+
+    // Keep reading till we don't encounter any error.
+    do
+    {
+        BytesRead = fread(Buffer, 1, GOOD_LENGTH, File);
+
+        if(ferror(File))
+        {
+            close(Conn); fclose(File);
+
+            perror("Failed trying to read input file");
+            exit(EXIT_FAILURE);
+        }
+
+        // Write the bytes.
+        if(WriteBytes(Conn, (unsigned char*)&Buffer, BytesRead) == -1)
+        {
+            close(Conn); fclose(File);
+
+            perror("Failed trying to write to device");
+            exit(EXIT_FAILURE);
+        }
+    } while(BytesRead > 0);
+
+    return EXIT_SUCCESS;
 }
 
 /*
@@ -227,12 +338,20 @@ int main(int argc, char *argv[])
 
     // Open the serial port connection.
     int Conn = OpenSerialConnection(Config.Device);
-    if(Conn == -1)
-    {
-        return EXIT_FAILURE;
-    }
 
     // Process.
+    // Open the kernel for read.
+    FILE *Kernel = fopen(Config.Kernel, "r");
+    if(!Kernel)
+    {
+        close(Conn);
+
+        perror("Failed to open the kernel");
+        exit(EXIT_FAILURE);
+    }
+
+    // Transfer the file.
+    TransferFile(Conn, Kernel);
 
     // Close the connection.
     close(Conn);
