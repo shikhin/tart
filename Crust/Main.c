@@ -27,7 +27,122 @@
 #include <unistd.h>
 #include <termios.h>
 
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 1
+
 #define USB_TTY_DEVICE "/dev/ttyUSB0"
+
+#define FLAGS_VERSION (1 << 0)
+#define FLAGS_USAGE   (1 << 1)
+#define FLAGS_HELP    (1 << 2)
+
+typedef struct 
+{
+    // Path of device, and kernel.
+    char *Device;
+    char *Kernel;
+
+    // Some flags.
+    int Flags;
+} Config_t;
+
+/*
+ * Outputs the help message.
+ */
+static inline void OutputHelpMsg()
+{
+    printf("Crust, version %d.%d\n\n", VERSION_MAJOR, VERSION_MINOR);
+
+    printf("\t -d <device>\t\t Specifies the device path\n");
+    printf("\t -k <kernel>\t\t Specifies the path of the kernel\n");
+    printf("\t -v\t\t\t Used to display the Crust version\n");
+    printf("\t -u\t\t\t Used to display the program usage\n");
+    printf("\t -h\t\t\t Used to display this message\n");
+}
+
+/*
+ * Outputs the usage message.
+ */
+static inline void OutputUsageMsg()
+{
+    printf("\t Usage:\t\t\tCrust [-d <device>] [-k <kernel>] [-u] [-v] [-h]\n");
+}
+
+/*
+ * Outputs the version message.
+ */
+static inline void OutputVersionMsg()
+{
+    printf("Crust, version %d.%d\n", VERSION_MAJOR, VERSION_MINOR);
+}
+
+/*
+ * Parses the command line config.
+ *     int argc     -> number of arguments.
+ *     char *argv[] -> array of arguments.
+ * 
+ * Returns:
+ *     Config_t     -> the config.
+ */
+Config_t ParseConfig(int argc, char *argv[])
+{
+    // The config structure.
+    Config_t Config;
+
+    // The device string.
+    Config.Device = USB_TTY_DEVICE;
+
+    // The kernel's path.
+    Config.Kernel = "./tart.kern";
+
+    // Parse the args.
+    for(int i = 1; i < argc; i++)
+    {
+        // If it's not a flag, continue.
+        if(argv[i][0] != '-')
+            continue;
+
+        switch(argv[i][1])
+        {
+            // If version is demanded, set the version flag.
+            case 'v':
+                Config.Flags |= FLAGS_VERSION;
+                break;
+
+            // If usage is demanded, set the usage flag.
+            case 'u':
+                Config.Flags |= FLAGS_USAGE;
+                break;
+
+            // If help is demanded, set the help flag.
+            case 'h':
+                Config.Flags |= FLAGS_HELP;
+                break;
+
+            // Get the device string.
+            case 'd':
+                // If the device string is really even there.
+                if((i + 1) < argc)
+                {
+                    // Get the device string.
+                    Config.Device = argv[++i];
+                }
+                break;
+
+            // Get the kernel's path.
+            case 'k':
+                // If the kernel string is really even there.
+                if((i + 1) < argc)
+                {
+                    // Get the kernel's path.
+                    Config.Kernel = argv[++i];
+                }
+                break;
+        }
+    }
+
+    return Config;
+}
 
 /*
  * Opens a serial port connection with a device.
@@ -86,45 +201,32 @@ static int OpenSerialConnection(const char *Device)
  */
 int main(int argc, char *argv[])
 {
-    // The device string.
-    char *Device = USB_TTY_DEVICE;
+    // Parse the config.
+    Config_t Config = ParseConfig(argc, argv);
 
-    // The kernel's path.
-    char *Path = "./tart.kern";
-
-    // Parse the args.
-    for(int i = 1; i < argc; i++)
+    if(Config.Flags & FLAGS_HELP)
     {
-        // If it's not a flag, continue.
-        if(argv[i][0] != '-')
-            continue;
+        // Print help message, and exit successfully.
+        OutputHelpMsg();
+        return EXIT_SUCCESS;
+    }
 
-        switch(argv[i][1])
-        {
-            // Get the device string.
-            case 'd':
-                // If the device string is really even there.
-                if((i + 1) < argc)
-                {
-                    // Get the device string.
-                    Device = argv[++i];
-                }
-                break;
+    if(Config.Flags & FLAGS_VERSION)
+    {
+        // Print version message, and exit successfully.
+        OutputVersionMsg();
+        return EXIT_SUCCESS;
+    }
 
-            // Get the kernel's path.
-            case 'k':
-                // If the kernel string is really even there.
-                if((i + 1) < argc)
-                {
-                    // Get the kernel's path.
-                    Path = argv[++i];
-                }
-                break;
-        }
+    if(Config.Flags & FLAGS_USAGE)
+    {
+        // Print usage message, and exit successfully.
+        OutputUsageMsg();
+        return EXIT_SUCCESS;
     }
 
     // Open the serial port connection.
-    int Conn = OpenSerialConnection(Device);
+    int Conn = OpenSerialConnection(Config.Device);
     if(Conn == -1)
     {
         return EXIT_FAILURE;

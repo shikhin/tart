@@ -23,6 +23,10 @@
 
 #include <UART.h>
 
+// The version.
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 1
+
 /*
  * The Main function for the laoder.
  */
