@@ -30,28 +30,31 @@
 #define USB_TTY_DEVICE "/dev/ttyUSB0"
 
 /*
- * The entry point of the program.
+ * Opens a serial port connection with a device.
+ *     char *Device -> the path of the device to open the connection with.
+ *
+ * Returns:
+ *     int          -> file descriptor of the opened connection. 
+ *                     -1 to indicate failure.
  */
-int main(int argc, char *argv[])
+static int OpenSerialConnection(const char *Device)
 {
     // The termios structure, to be configured for serial interface.
     struct termios Serial;
 
-    const char *Device = USB_TTY_DEVICE;
-
     // Open the device, read/write, not the controlling tty, and non-blocking I/O.
-    int FD = open(Device, O_RDWR | O_NOCTTY | O_NDELAY);
-    if((FD == -1) || !isatty(FD)) 
+    int Conn = open(Device, O_RDWR | O_NOCTTY | O_NDELAY);
+    if((Conn == -1) || !isatty(Conn)) 
     {
         perror("Failed to open TTY port");
-        return EXIT_FAILURE;
+        return -1;
     }
 
     // Get the attributes.
-    if(tcgetattr(FD, &Serial) == -1)
+    if(tcgetattr(Conn, &Serial) == -1)
     {
         perror("Failed to get attributes of device");
-        return EXIT_FAILURE;
+        return -1;
     }
 
     // So, we return after 0.1 seconds.
@@ -69,16 +72,68 @@ int main(int argc, char *argv[])
        (cfsetospeed(&Serial, B115200) < 0))
     {
         perror("Failed to set baud-rate");
-        return EXIT_FAILURE;
+        return -1;
     }
 
     // Write the attributes.
-    tcsetattr(FD, TCSAFLUSH, &Serial);
+    tcsetattr(Conn, TCSAFLUSH, &Serial); 
+
+    return Conn; 
+}
+
+/*
+ * The entry point of the program.
+ */
+int main(int argc, char *argv[])
+{
+    // The device string.
+    char *Device = USB_TTY_DEVICE;
+
+    // The kernel's path.
+    char *Path = "./tart.kern";
+
+    // Parse the args.
+    for(int i = 1; i < argc; i++)
+    {
+        // If it's not a flag, continue.
+        if(argv[i][0] != '-')
+            continue;
+
+        switch(argv[i][1])
+        {
+            // Get the device string.
+            case 'd':
+                // If the device string is really even there.
+                if((i + 1) < argc)
+                {
+                    // Get the device string.
+                    Device = argv[++i];
+                }
+                break;
+
+            // Get the kernel's path.
+            case 'k':
+                // If the kernel string is really even there.
+                if((i + 1) < argc)
+                {
+                    // Get the kernel's path.
+                    Path = argv[++i];
+                }
+                break;
+        }
+    }
+
+    // Open the serial port connection.
+    int Conn = OpenSerialConnection(Device);
+    if(Conn == -1)
+    {
+        return EXIT_FAILURE;
+    }
 
     // Process.
 
-    // Close the device.
-    close(FD);
+    // Close the connection.
+    close(Conn);
 
     return EXIT_SUCCESS;
 }
