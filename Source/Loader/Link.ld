@@ -49,5 +49,8 @@ SECTIONS
         *(.bss)
     }
 
+    /* Align to 16 byte boundary. */
+    . = ALIGN(16);
+
     end = .; _end = .; __end = .;
 }

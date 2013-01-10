@@ -19,6 +19,9 @@ Tools/
 *.elf
 *.img
 
+## Crust.
+Crust/Crust
+
 # Build environment related.
 
 ## Sublime Text.

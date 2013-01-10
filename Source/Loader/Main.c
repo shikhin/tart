@@ -1,5 +1,5 @@
 /*
- * The C part executes here.
+ * The main function of the loader.
  *
  * Copyright (c) 2013, Shikhin Sethi
  *
