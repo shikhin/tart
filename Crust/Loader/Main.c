@@ -27,6 +27,8 @@
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
 
+#define LOADER_ADDR   0x400000
+
 /*
  * The Main function for the laoder.
  */
@@ -36,14 +38,45 @@ void Main()
     UARTInit();
 
     // Tart loader protocol.
+    uint32_t Size;
 
-    // Output major version, followed by minor.
-    UARTTransmit(VERSION_MAJOR); UARTTransmit(VERSION_MINOR);
-
-    // If 'OK' wasn't transmitted, just go into an infinite loop.
-    if((char)UARTRecieve() != 'O' || (char)UARTRecieve() != 'K')
+    // Check major version, followed by minor.
+    if(UARTReceive() != VERSION_MAJOR ||
+       UARTReceive() != VERSION_MINOR)
     {
-        // Loop.
+        // Version error.
+        UARTTransmit((uint8_t)'V'); UARTTransmit((uint8_t)'E');
         for(;;);
+    }
+
+    // Receive size of kernel.
+    Size = UARTReceive(); 
+    Size |= (UARTReceive() << 8);
+    Size |= (UARTReceive() << 16);
+    Size |= (UARTReceive() << 24);
+
+    if(Size > (LOADER_ADDR - 0x8000))
+    {
+        // Size error.
+        UARTTransmit((uint8_t)'S'); UARTTransmit((uint8_t)'E');
+        for(;;);
+    } 
+
+    // Send 'OK' back.
+    UARTTransmit((uint8_t)'O'); UARTTransmit((uint8_t)'K');
+
+    // Receive the kernel.
+    uint32_t *Kernel = (uint32_t*)0x8000;
+
+    while(Size)
+    {
+        uint32_t Value = UARTReceive();
+        Value |= (UARTReceive() << 8);
+        Value |= (UARTReceive() << 16);
+        Value |= (UARTReceive() << 24);
+
+        *Kernel = Value;
+
+        Kernel++; Size -= 4;
     }
 }

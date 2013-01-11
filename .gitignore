@@ -18,6 +18,7 @@ Tools/
 ## Output files.
 *.elf
 *.img
+*.kern
 
 ## Crust.
 Crust/Crust

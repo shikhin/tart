@@ -26,6 +26,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
+#include <stdint.h>
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
@@ -91,11 +92,14 @@ Config_t ParseConfig(int argc, char *argv[])
     // The config structure.
     Config_t Config;
 
+    // Flags.
+    Config.Flags = 0;
+
     // The device string.
     Config.Device = USB_TTY_DEVICE;
 
     // The kernel's path.
-    Config.Kernel = "./tart.kern";
+    Config.Kernel = "./Tart.kern";
 
     // Parse the args.
     for(int i = 1; i < argc; i++)
@@ -209,14 +213,14 @@ static int OpenSerialConnection(const char *Device)
 
 /* 
  * Read bytes via the serial connection.
- *     int Conn     -> connection handle where to read to.
- *     unsigned char *Stream -> stream from where to store the bytes.
- *     int NBytes   -> number of bytes to read.
+ *     int Conn        -> connection handle where to read to.
+ *     uint8_t *Stream -> stream from where to store the bytes.
+ *     int NBytes      -> number of bytes to read.
  *
  * Returns:
- *     int          -> 0 for success, -1 for failure.
+ *     int             -> 0 for success, -1 for failure.
  */
-static inline int ReadBytes(int Conn, unsigned char *Stream, int NBytes)
+static inline int ReadBytes(int Conn, uint8_t *Stream, int NBytes)
 {
     // Read all the bytes.
     while(NBytes)
@@ -238,14 +242,14 @@ static inline int ReadBytes(int Conn, unsigned char *Stream, int NBytes)
 
 /* 
  * Write bytes via the serial connection.
- *     int Conn     -> connection handle where to write to.
- *     const unsigned char *Stream -> stream from where to get the bytes.
- *     int NBytes   -> number of bytes to write.
+ *     int Conn              -> connection handle where to write to.
+ *     const uint8_t *Stream -> stream from where to get the bytes.
+ *     int NBytes            -> number of bytes to write.
  *
  * Returns:
- *     int          -> 0 for success, -1 for failure.
+ *     int                   -> 0 for success, -1 for failure.
  */
-static inline int WriteBytes(int Conn, const unsigned char *Stream, int NBytes)
+static inline int WriteBytes(int Conn, const uint8_t *Stream, int NBytes)
 {
     // Write all the bytes.
     while(NBytes)
@@ -276,7 +280,7 @@ static inline int WriteBytes(int Conn, const unsigned char *Stream, int NBytes)
 static int TransferFile(int Conn, FILE *File)
 {
     // A quick buffer on the stack of GOOD_LENGTH.
-    unsigned char Buffer[GOOD_LENGTH];
+    uint8_t Buffer[GOOD_LENGTH];
  
     // Bytes read this time, and bytes to write.
     int BytesRead;
@@ -295,7 +299,7 @@ static int TransferFile(int Conn, FILE *File)
         }
 
         // Write the bytes.
-        if(WriteBytes(Conn, (unsigned char*)&Buffer, BytesRead) == -1)
+        if(WriteBytes(Conn, (uint8_t*)&Buffer, BytesRead) == -1)
         {
             close(Conn); fclose(File);
 
@@ -351,33 +355,62 @@ int main(int argc, char *argv[])
     }
 
     // A simple buffer for the beginnning.
-    union Data
+    uint8_t Byte[2];
+    uint32_t Size;
+    
+    // Send the version, and kernel size.
+    Byte[0] = VERSION_MAJOR; Byte[1] = VERSION_MINOR;
+    
+    fseek(Kernel, 0L, SEEK_END);
+    Size = ftell(Kernel);
+    fseek(Kernel, 0L, SEEK_SET);
+
+    // Writing failed.
+    if(WriteBytes(Conn, (uint8_t*)&Byte, 2) == -1 ||
+       WriteBytes(Conn, (uint8_t*)&Size, 4) == -1)
     {
-        unsigned char Byte[4];
-        int DWord;
-    } Buffer;
+        close(Conn); fclose(Kernel);
 
-    // Get the version.
-    ReadBytes(Conn, (unsigned char*)&Buffer.Byte, 2);
-
-    if(Buffer.Byte[0] != VERSION_MAJOR ||
-       Buffer.Byte[1] != VERSION_MINOR)
-    {
-        // Transfer "NO".
-        Buffer.Byte[0] = 'N'; Buffer.Byte[1] = 'O';
-        WriteBytes(Conn, (const unsigned char*)&Buffer.Byte, 2);
-
-        printf("Tart version (%d.%d) on Raspberry Pi does not match with Crust version (%d.%d).\n", 
-               Buffer.Byte[0], Buffer.Byte[1], VERSION_MAJOR, VERSION_MINOR);
+        printf("Failed trying to write to device.\n");
         exit(EXIT_FAILURE);
     }
-  
-    // Transfer "OK".
-    Buffer.Byte[0] = 'O'; Buffer.Byte[1] = 'K';
-    WriteBytes(Conn, (const unsigned char*)&Buffer.Byte, 2);
+
+    // Get OK validation.
+    if(ReadBytes(Conn, (uint8_t*)&Byte, 2) == -1 ||
+       Byte[0] != 'O' ||
+       Byte[1] != 'K')
+    {
+        close(Conn); fclose(Kernel);
+
+        switch(Byte[0])
+        {
+            // Version error.
+            case 'V':
+                printf("Version mis-match with loader.\n");
+
+            // Size error.
+            case 'S':
+                printf("Kernel size not acceptable by loader.\n");
+        }
+
+        exit(EXIT_FAILURE);
+    }
 
     // Transfer the file.
     TransferFile(Conn, Kernel);
+
+    char C;
+
+    while(1)
+    {
+        if(ReadBytes(Conn, (uint8_t*)&C, 1) == -1)
+        {
+            printf("Error reading input from kernel.\n");
+            exit(EXIT_FAILURE);
+        }
+        
+        printf("%c", C); fflush(stdout);
+    }
 
     // Close the connection.
     close(Conn);

@@ -1,5 +1,5 @@
  #
- # Tart build system (for Crust)
+ # Tart build system (for Crust and loader).
  #
  # Copyright (c) 2013, Shikhin Sethi
  #
@@ -21,6 +21,10 @@
  # OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  #
 
+# The prefix & for tools.
+PREFIX ?= ./../Tools/bin
+ARMGNU ?= $(PREFIX)/arm-none-eabi
+
 # Some color codes.
 # If stdout isn't a terminal for you, just delete the part in front of ?= for the following.
 Blue ?= \033[34m
@@ -28,42 +32,84 @@ Green ?= \033[92m
 End ?= \033[0m
 
 # Get list of warnings and cflags.
-CFLAGS := -std=c99 -Wall -Wextra -pedantic -O2 -Wno-unused-parameter
+TARTCFLAGS := -std=c99 -Wall -Wextra -pedantic -O2 -Wshadow -Wcast-align \
+              -Wwrite-strings -Wredundant-decls -Wnested-externs \
+              -Winline -Wno-attributes -Wno-deprecated-declarations \
+         	  -Wno-div-by-zero -Wno-endif-labels -Wfloat-equal -Wformat=2 \
+          	  -Wno-format-extra-args -Winit-self -Winvalid-pch \
+          	  -Wmissing-format-attribute -Wmissing-include-dirs \
+              -Wno-multichar \
+              -Wno-pointer-to-int-cast -Wredundant-decls \
+              -Wshadow -Wno-sign-compare \
+              -Wswitch -Wsystem-headers -Wundef \
+              -Wno-pragmas -Wno-unused-but-set-parameter -Wno-unused-but-set-variable \
+              -Wno-unused-result -Wwrite-strings -Wdisabled-optimization \
+              -Werror -pedantic-errors -Wpointer-arith -nostdlib \
+              -nostartfiles -ffreestanding \
+              -nodefaultlibs -fno-builtin -fomit-frame-pointer -O2
+
+CRUSTCFLAGS := -std=c99 -Wall -Wextra -pedantic -O2 -Wno-unused-parameter
 
 # Get a list of source files and header files.
-CRUSTC := $(shell find ./ -type f -name "*.c")
-CRUSTHDR := $(shell find ./Include -type f -name "*.h")
+LOADERC := $(shell find Loader -type f -name "*.c")
+LOADERASM := $(shell find Loader -type f -name "*.S")
+LOADERHDR := $(shell find Loader/Include -type f -name "*.h")
+
+CRUSTC := Main.c
 
 # Get the object files.
-CRUSTOBJ := $(patsubst %.c,%.o,$(CRUSTC))
+LOADEROBJ := $(patsubst %.S,%.o,$(LOADERASM)) $(patsubst %.c,%.o,$(LOADERC))
 
 # Get the dependancies.
-CRUSTDEP := $(patsubst %.c,%.d,$(CRUSTC))
+LOADERDEP := $(patsubst %.c,%.d,$(LOADERC))
+CRUSTDEP := Crust.d
 
 # List phony targets.
 .PHONY: all clean todo
 
 # The default target.
-all: crust
+all: Crust Loader.img
 
 # Crust target.
-crust: $(CRUSTOBJ)
-	@echo -e "  $(Blue)[LD]$(End)    Crust"
-	@$(CC) $(CRUSTOBJ) -o Crust
+Crust: $(CRUSTC)
+	@echo -e "  $(Blue)[CC]$(End)    Crust"
+	@$(CC) -IInclude $(CRUSTCFLAGS) -MMD -MP $(CRUSTC) -o Crust
 
 # Include $(CRUSTDEP).
 -include $(CRUSTDEP)
 
-# Clean.
-clean: 
-	@$(foreach File,$(CRUSTOBJ),echo "Removed" $(File);)
-	@$(foreach File,$(CRUSTDEP),echo "Removed" $(File);)
+# Loader target.
+Loader.img: $(LOADEROBJ) Loader/Link.ld
+	@echo -e "  $(Blue)[LD]$(End)    Loader.elf"
+	@$(ARMGNU)-ld $(LOADEROBJ) -TLoader/Link.ld -o Loader.elf
 
-	@echo "Removed Crust"
+	@echo -e "  $(Blue)[OBJ]$(End)   Loader.img"
+	@$(ARMGNU)-objcopy Loader.elf -O binary Loader.img
 
-	-@$(RM) $(wildcard $(CRUSTOBJ) $(CRUSTDEP) Crust)
+# Include $(LOADERDEP).
+-include $(LOADERDEP)
 
 # CC.
 %.o: %.c Makefile
 	@echo -e "  $(Blue)[CC]$(End)   " $<
-	@$(CC) $(CFLAGS) -IInclude -MMD -MP -c $< -o $@
+	@$(ARMGNU)-gcc $(CFLAGS) -ILoader/Include -IInclude -MMD -MP -c $< -o $@
+
+# AS.
+%.o: %.S Makefile
+	@echo -e "  $(Blue)[AS]$(End)   " $<
+	@$(ARMGNU)-as -c $< -o $@
+
+# Clean.
+clean: 
+	@$(foreach File,$(CRUSTDEP),echo "Removed" $(File);)
+	@echo "Removed Crust"
+
+	-@$(RM) $(wildcard $(CRUSTDEP) Crust)
+
+	@$(foreach File,$(LOADEROBJ),echo "Removed" $(File);)
+	@$(foreach File,$(LOADERDEP),echo "Removed" $(File);)
+
+	@echo "Removed Loader.elf"
+	@echo "Removed Loader.img"
+
+	-@$(RM) $(wildcard $(LOADEROBJ) $(LOADERDEP) Loader.elf Loader.img)

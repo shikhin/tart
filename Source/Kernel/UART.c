@@ -1,5 +1,5 @@
 /*
- * Tart build system.
+ * UART initialization & communication functions.
  *
  * Copyright (c) 2013, Shikhin Sethi
  *
@@ -21,36 +21,51 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-ENTRY(Start)
+#include <stdint.h>
+#include <UART.h>
 
-SECTIONS
+// HACK TILL INTERRUPTS WORK.
+
+/*
+ * Transmit a byte via UART0.
+ *    uint8_t Byte -> Byte to send.
+ */
+void UARTTransmit(uint8_t Byte)
 {
-    /* Starts at 0x200000. */
-    .text 0x200000 :
+    // Keep trying.
+    while(1)
     {
-        *(.text)
-        *(.rodata)
+        // If transmit FIFO isn't full.
+        if(!(MMIORegRead(UART0_FR) & (1 << 5)))
+        {
+            // Break.
+            break;
+        }
     }
 
-    .data :
+    // So transmit FIFO isn't full, transmit the byte.
+    MMIORegWrite(UART0_DR, (uint32_t)Byte);
+}
+
+/*
+ * Receive a byte via UART0.
+ *
+ * Returns:
+ *    uint8_t -> Byte received.
+ */
+uint8_t UARTReceive()
+{
+    // Keep trying.
+    while(1)
     {
-        *(.data)
+        // If receive FIFO isn't empty, break.
+        if(!(MMIORegRead(UART0_FR) & (1 << 4)))
+        {
+            // Break.
+            break;
+        }
     }
 
-    /* The physical file ends here. */
-    file_end = .; _file_end = .; __file_end = .;
-
-    /* Align to 16 byte boundary. */
-    . = ALIGN(16);
-
-    .bss :
-    {
-        bss = .;
-        *(.bss)
-    }
-
-    /* Align to 16 byte boundary. */
-    . = ALIGN(16);
-
-    end = .; _end = .; __end = .;
+    // So receive FIFO isn't empty, receive a byte.
+    return (uint8_t)(MMIORegRead(UART0_DR));
 }

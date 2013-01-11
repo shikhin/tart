@@ -49,47 +49,47 @@ CFLAGS := -std=c99 -Wall -Wextra -pedantic -O2 -Wshadow -Wcast-align \
           -nodefaultlibs -fno-builtin -fomit-frame-pointer -O2
 
 # Get a list of source files and header files.
-LOADERC := $(shell find Source/Loader -type f -name "*.c")
-LOADERASM := $(shell find Source/Loader -type f -name "*.S")
-LOADERHDR := $(shell find Source/Loader/Include -type f -name "*.h")
+KERNELC := $(shell find Source/Kernel -type f -name "*.c")
+KERNELASM := $(shell find Source/Kernel -type f -name "*.S")
+KERNELHDR := $(shell find Source/Kernel/Include -type f -name "*.h")
 
 # Get the object files.
-LOADEROBJ := $(patsubst %.S,%.o,$(LOADERASM)) $(patsubst %.c,%.o,$(LOADERC))
+KERNELOBJ := $(patsubst %.S,%.o,$(KERNELASM)) $(patsubst %.c,%.o,$(KERNELC))
 
 # Get the dependancies.
-LOADERDEP := $(patsubst %.c,%.d,$(LOADERC))
+KERNELDEP := $(patsubst %.c,%.d,$(KERNELC))
 
 # List phony targets.
 .PHONY: all clean todo
 
 # The default target.
-all: kernel.img
+all: Tart.kern
 
-# Kernel.img target (in reality, this is the loader).
-kernel.img: $(LOADEROBJ) Source/Loader/Link.ld
-	@echo -e "  $(Blue)[LD]$(End)    kernel.elf"
-	@$(ARMGNU)-ld $(LOADEROBJ) -TSource/Loader/Link.ld -o kernel.elf
+# Tart.kern target (in reality, this is the Kernel).
+Tart.kern: $(KERNELOBJ) Source/Kernel/Link.ld
+	@echo -e "  $(Blue)[LD]$(End)    Tart.elf"
+	@$(ARMGNU)-ld $(KERNELOBJ) -TSource/Kernel/Link.ld -o Tart.elf
 
-	@echo -e "  $(Blue)[OBJ]$(End)   kernel.img"
-	@$(ARMGNU)-objcopy kernel.elf -O binary kernel.img
+	@echo -e "  $(Blue)[OBJ]$(End)   Tart.kern"
+	@$(ARMGNU)-objcopy Tart.elf -O binary Tart.kern
 
-# Include $(LOADERDEP).
--include $(LOADERDEP)
+# Include $(KERNELDEP).
+-include $(KERNELDEP)
 
 # Clean.
 clean: 
-	@$(foreach File,$(LOADEROBJ),echo "Removed" $(File);)
-	@$(foreach File,$(LOADERDEP),echo "Removed" $(File);)
+	@$(foreach File,$(KERNELOBJ),echo "Removed" $(File);)
+	@$(foreach File,$(KERNELDEP),echo "Removed" $(File);)
 
-	@echo "Removed kernel.elf"
-	@echo "Removed kernel.img"
+	@echo "Removed Tart.elf"
+	@echo "Removed Tart.kern"
 
-	-@$(RM) $(wildcard $(LOADEROBJ) $(LOADERDEP) kernel.elf kernel.img)
+	-@$(RM) $(wildcard $(KERNELOBJ) $(KERNELDEP) Tart.elf Tart.kern)
 
 # CC.
 %.o: %.c Makefile
 	@echo -e "  $(Blue)[CC]$(End)   " $<
-	@$(ARMGNU)-gcc $(CFLAGS) -ISource/Loader/Include -ISource/Include -MMD -MP -c $< -o $@
+	@$(ARMGNU)-gcc $(CFLAGS) -ISource/Kernel/Include -ISource/Include -MMD -MP -c $< -o $@
 
 # AS.
 %.o: %.S Makefile

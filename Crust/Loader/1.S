@@ -21,6 +21,8 @@
  @ OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  @
 
+.equ LOADER_ADDR, 0x400000
+
 @ To keep this in the first portion of the binary.
 .text
 
@@ -31,13 +33,13 @@
  @     r15 -> should begin execution at 0x8000.
 Start:
     @ Setup the stack.
-    mov sp, #0x200000
+    mov sp, #LOADER_ADDR
 
-@ Since we're loaded at 0x8000, relocate to 0x200000.
+@ Since we're loaded at 0x8000, relocate to LOADER_ADDR.
 .Relocate:
     @ From r0 to r1.
     mov r0, #0x8000
-    mov r1, #0x200000
+    mov r1, #LOADER_ADDR
     ldr r6, =file_end
 
 .Loop:
@@ -52,6 +54,9 @@ Start:
     @ TODO: Clear out bss.
 
     ldr r0, =Main
+    bx r0
+
+    ldr r0, =0x8000
     bx r0
 
 @ DON'T RETURN HERE.
