@@ -1,6 +1,6 @@
 #Tart
 
-[Tart](/Shikhin/Tart/) is an experimental OS designed for the Raspberry Pi. It's main motive is to let the author as well as others learn more about the ARM architecture.
+[Tart](/Shikhin/Tart/) is an experimental OS designed to be a Unix clone. It's main motive is to let the author as well as others learn more about Unix, as well as OSes in general.
 
 #Help
 

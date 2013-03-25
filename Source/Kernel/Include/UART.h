@@ -26,7 +26,16 @@
 
 #include <stdint.h>
 
-// HACK TILL INTERRUPTS WORK.
+// The GPIO registers base address.
+#define GPIO_BASE    0x20200000
+
+// The offsets for reach register.
+
+// Controls actuation of pull up/down to ALL GPIO pins.
+#define GPPUD        (GPIO_BASE + 0x94)
+
+// Controls actuation of pull up/down for specific GPIO pin.
+#define GPPUDCLK0    (GPIO_BASE + 0x98)
 
 // The base address for MMIO for UART.
 #define UART0_BASE   0x20201000
@@ -72,6 +81,11 @@ extern uint32_t MMIORegRead(uint32_t Addr);
  *     uint32_t n -> the number of cycles to delay for.
  */
 extern void Delay(uint32_t n);
+
+/*
+ * Initializes the UART, making it available for communication.
+ */
+void UARTInit(void);
 
 /*
  * Transmit a byte via UART0.

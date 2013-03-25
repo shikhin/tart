@@ -20,9 +20,6 @@ Tools/
 *.img
 *.kern
 
-## Crust.
-Crust/Crust
-
 # Build environment related.
 
 ## Sublime Text.

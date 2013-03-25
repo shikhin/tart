@@ -32,21 +32,7 @@ Green ?= \033[92m
 End ?= \033[0m
 
 # Get list of warnings and cflags.
-CFLAGS := -std=c99 -Wall -Wextra -pedantic -O2 -Wshadow -Wcast-align \
-          -Wwrite-strings -Wredundant-decls -Wnested-externs \
-          -Winline -Wno-attributes -Wno-deprecated-declarations \
-          -Wno-div-by-zero -Wno-endif-labels -Wfloat-equal -Wformat=2 \
-          -Wno-format-extra-args -Winit-self -Winvalid-pch \
-          -Wmissing-format-attribute -Wmissing-include-dirs \
-          -Wno-multichar \
-          -Wno-pointer-to-int-cast -Wredundant-decls \
-          -Wshadow -Wno-sign-compare \
-          -Wswitch -Wsystem-headers -Wundef \
-          -Wno-pragmas -Wno-unused-but-set-parameter -Wno-unused-but-set-variable \
-          -Wno-unused-result -Wwrite-strings -Wdisabled-optimization \
-          -Werror -pedantic-errors -Wpointer-arith -nostdlib \
-          -nostartfiles -ffreestanding \
-          -nodefaultlibs -fno-builtin -fomit-frame-pointer -O2
+CFLAGS := -std=c99 -Wall -Wextra -nostdlib -ffreestanding -lgcc -O2
 
 # Get a list of source files and header files.
 KERNELC := $(shell find Source/Kernel -type f -name "*.c")

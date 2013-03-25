@@ -98,6 +98,14 @@ export PATH=$PATH:$PREFIX/bin
 cd Tools/build-gcc && ../gcc-4.7.2/configure --target=$TARGET --prefix=$PREFIX --disable-nls --enable-languages=c --without-headers --with-gnu-as --with-gnu-ld
 cd ../../
 
+export LD_FOR_TARGET=$PREFIX/bin/$TARGET-elf-ld
+export OBJDUMP_FOR_TARGET=$PREFIX/bin/$TARGET-elf-objdump
+export NM_FOR_TARGET=$PREFIX/bin/$TARGET-elf-nm
+export RANLIB_FOR_TARGET=$PREFIX/bin/$TARGET-elf-ranlib
+export READELF_FOR_TARGET=$PREFIX/bin/$TARGET-elf-readelf
+export STRIP_FOR_TARGET=$PREFIX/bin/$TARGET-elf-strip
+export AS_FOR_TARGET=$PREFIX/bin/$TARGET-elf-as
+
 # Compile.
 echo -e "  $Blue[GCC]$End   Compiling"
 make -C Tools/build-gcc all-gcc
