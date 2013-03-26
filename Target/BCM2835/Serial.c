@@ -21,7 +21,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <UART.h>
+#include <Serial.h>
 
 // HACK: TILL INTERRUPTS WORK.
 
@@ -29,7 +29,7 @@
  * Initializes the UART, making it available for communication.
  */
 /*
-void UARTInit()
+void SerialInit()
 {
     // Disable UART0.
     MMIORegWrite(UART0_CR, 0x00000000);
@@ -77,7 +77,7 @@ void UARTInit()
  * Transmit a byte via UART0.
  *    uint8_t Byte -> Byte to send.
  */
-void UARTTransmit(uint8_t Byte)
+void SerialTransmit(uint8_t Byte)
 {
     // Keep trying.
     while(1)
@@ -100,7 +100,7 @@ void UARTTransmit(uint8_t Byte)
  * Returns:
  *    uint8_t -> Byte received.
  */
-uint8_t UARTReceive()
+uint8_t SerialReceive()
 {
     // Keep trying.
     while(1)

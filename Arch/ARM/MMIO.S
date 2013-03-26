@@ -1,5 +1,5 @@
  @
- @ Start for kernel.
+ @ MMIO accesses.
  @
  @ Copyright (c) 2013, Shikhin Sethi
  @
@@ -21,32 +21,13 @@
  @ OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  @
 
-@ To keep this in the first portion of the binary.
+@ Text section.
 .text
-
-@ Make Start global.
-.globl Start
-
- @ Entry point for the kernel.
- @     r15 -> should begin execution at 0x8000.
-Start:
-    @ Setup the stack.
-    mov sp, #0x8000
-
-    @ TODO: Clear out bss.
-    ldr r0, =Main
-    bx r0
-
-@ DON'T RETURN HERE.
-
-@ Make MMIORegWrite & MMIORegRead & Delay global.
-.globl MMIORegWrite
-.globl MMIORegRead
-.globl Delay
 
  @ Used to write to a MMIO register.
  @     r0 -> address where to write to.
  @     r1 -> the data to write to the MMIO register.
+.globl MMIORegWrite
 MMIORegWrite:
     @ Just do a plain write. This function ensures the compiler doesn't optimize this out,
     @ and that they are perfect 32-bit writes.
@@ -58,17 +39,9 @@ MMIORegWrite:
  @
  @ Returns:
  @     r0 -> the data read from the MMIO register.
+.globl MMIORegRead
 MMIORegRead:
     @ Just do a plain read. This function ensures the compiler doesn't optimize this out,
     @ and that they are perfect 32-bit read.
     ldr r0, [r0]
-    bx lr
-
- @ Create a delay for 'n' cycles.
- @     r0 -> the number of cycles to delay for.
-Delay:
-    @ Subtract 1 and keep looping till not 0.
-    subs r0, r0, #1
-    bne Delay
-
     bx lr

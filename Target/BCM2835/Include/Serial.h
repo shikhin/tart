@@ -1,5 +1,5 @@
 /*
- * UART initialization & communication definitions.
+ * UART initialization for serial communication.
  *
  * Copyright (c) 2013, Shikhin Sethi
  *
@@ -21,21 +21,11 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _UART_H
-#define _UART_H
+#ifndef _SERIAL_H
+#define _SERIAL_H
 
 #include <stdint.h>
-
-// The GPIO registers base address.
-#define GPIO_BASE    0x20200000
-
-// The offsets for reach register.
-
-// Controls actuation of pull up/down to ALL GPIO pins.
-#define GPPUD        (GPIO_BASE + 0x94)
-
-// Controls actuation of pull up/down for specific GPIO pin.
-#define GPPUDCLK0    (GPIO_BASE + 0x98)
+#include <GPIO.h>
 
 // The base address for MMIO for UART.
 #define UART0_BASE   0x20201000
@@ -61,37 +51,15 @@
 #define UART0_TDR    (UART0_BASE + 0x8C)
 
 /*
- * Used to write to a MMIO register.
- *     uint32_t Addr -> address where to write to.
- *     uint32_t Data -> the data to write to the MMIO register.
- */
-extern void MMIORegWrite(uint32_t Addr, uint32_t Data);
-
-/*
- * Used to read from a MMIO register.
- *     uint32_t Addr -> address where to read from.
- *
- * Returns:
- *     uint32_t      -> the data read from the MMIO register.
- */
-extern uint32_t MMIORegRead(uint32_t Addr);
-
-/*
- * Create a delay for 'n' cycles.
- *     uint32_t n -> the number of cycles to delay for.
- */
-extern void Delay(uint32_t n);
-
-/*
  * Initializes the UART, making it available for communication.
  */
-void UARTInit(void);
+void SerialInit(void);
 
 /*
  * Transmit a byte via UART0.
  *    uint8_t Byte -> Byte to send.
  */
-void UARTTransmit(uint8_t Byte);
+void SerialTransmit(uint8_t Byte);
 
 /*
  * Receive a byte via UART0.
@@ -99,6 +67,6 @@ void UARTTransmit(uint8_t Byte);
  * Returns:
  *    uint8_t -> Byte received.
  */
-uint8_t UARTReceive(void);
+uint8_t SerialReceive(void);
 
-#endif /* _UART_H */
+#endif /* _SERIAL_H */

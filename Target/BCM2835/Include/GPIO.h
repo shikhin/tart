@@ -1,5 +1,5 @@
 /*
- * Tart build system.
+ * GPIO.
  *
  * Copyright (c) 2013, Shikhin Sethi
  *
@@ -21,36 +21,18 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-ENTRY(Start)
+#ifndef _GPIO_H
+#define _GPIO_H
 
-SECTIONS
-{
-    /* Starts at LOADER_ADDR. */
-    .text 0x8000 :
-    {
-        *(.text)
-        *(.rodata)
-    }
+// The GPIO registers base address.
+#define GPIO_BASE    0x20200000
 
-    .data :
-    {
-        *(.data)
-    }
+// The offsets for reach register.
 
-    /* The physical file ends here. */
-    file_end = .; _file_end = .; __file_end = .;
+// Controls actuation of pull up/down to ALL GPIO pins.
+#define GPPUD        (GPIO_BASE + 0x94)
 
-    /* Align to 16 byte boundary. */
-    . = ALIGN(16);
+// Controls actuation of pull up/down for specific GPIO pin.
+#define GPPUDCLK0    (GPIO_BASE + 0x98)
 
-    .bss :
-    {
-        bss = .;
-        *(.bss)
-    }
-
-    /* Align to 16 byte boundary. */
-    . = ALIGN(16);
-
-    end = .; _end = .; __end = .;
-}
+#endif /* _GPIO_H */

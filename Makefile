@@ -21,17 +21,11 @@
  # OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  #
 
-# The prefix & for tools.
-PREFIX ?= ./Tools/bin
-ARMGNU ?= $(PREFIX)/arm-none-eabi
+# Include the config and rules.
+include Config.mk
+include Rules.mk
 
-# Some color codes.
-# If stdout isn't a terminal for you, just delete the part in front of ?= for the following.
-Blue ?= \033[34m
-Green ?= \033[92m
-End ?= \033[0m
-
-# Get list of warnings and cflags.
+# List of CFLAGS.
 CFLAGS := -std=c99 -Wall -Wextra -nostdlib -ffreestanding -lgcc -O2
 
 # Get a list of source files and header files.
@@ -53,10 +47,10 @@ all: Tart.kern
 
 # Tart.kern target (in reality, this is the Kernel).
 Tart.kern: $(KERNELOBJ) Source/Kernel/Link.ld
-	@echo -e "  $(Blue)[LD]$(End)    Tart.elf"
+	@echo -e "  $(BLUE)[LD]$(END)    Tart.elf"
 	@$(ARMGNU)-ld $(KERNELOBJ) -TSource/Kernel/Link.ld -o Tart.elf
 
-	@echo -e "  $(Blue)[OBJ]$(End)   Tart.kern"
+	@echo -e "  $(BLUE)[OBJ]$(END)   Tart.kern"
 	@$(ARMGNU)-objcopy Tart.elf -O binary Tart.kern
 
 # Include $(KERNELDEP).
@@ -74,10 +68,10 @@ clean:
 
 # CC.
 %.o: %.c Makefile
-	@echo -e "  $(Blue)[CC]$(End)   " $<
+	@echo -e "  $(BLUE)[CC]$(END)   " $<
 	@$(ARMGNU)-gcc $(CFLAGS) -ISource/Kernel/Include -ISource/Include -MMD -MP -c $< -o $@
 
 # AS.
 %.o: %.S Makefile
-	@echo -e "  $(Blue)[AS]$(End)   " $<
+	@echo -e "  $(BLUE)[AS]$(END)   " $<
 	@$(ARMGNU)-as -c $< -o $@
