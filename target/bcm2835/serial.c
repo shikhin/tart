@@ -21,8 +21,8 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <Serial.h>
-#include <MMIO.h>
+#include <serial.h>
+#include <mmio.h>
 
 // HACK: TILL INTERRUPTS WORK.
 

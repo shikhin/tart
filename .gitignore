@@ -1,5 +1,5 @@
 # Tools
-Tools/
+tools/
 
 # All executables + output files.
 
@@ -16,7 +16,7 @@ Tools/
 *~
 
 ## Output files.
-Tart
+tart
 *.bin
 
 # Build environment related.

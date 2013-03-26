@@ -25,7 +25,7 @@
 #define _SERIAL_H
 
 #include <stdint.h>
-#include <GPIO.h>
+#include <gpio.h>
 
 // The base address for MMIO for UART.
 #define UART0_BASE   0x20201000

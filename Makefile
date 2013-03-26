@@ -21,49 +21,52 @@
  # OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  #
 
-# Include the config and rules.
-include Config.mk
-include Rules.mk
-include Target/$(TARGET)/Rules.mk
+# OUTELF and OUTBIN.
+OUTELF := tart
+OUTBIN := $(OUTELF).bin
 
-OUTELF = Tart
-OUTBIN = $(OUTELF).bin
+CCFLAGS ?= -O2
+
+# Include the config and rules.
+include config.mk
+include rules.mk
+include target/$(TARGET)/rules.mk
 
 # List of CFLAGS.
-CFLAGS += -std=c99 -Wall -Wextra -nostdlib -ffreestanding -lgcc -O2
+CFLAGS += -std=c99 -Wall -Wextra -nostdlib -ffreestanding -lgcc
 
 # Get a list of source files.
-CSRC = $(shell find Arch/$(ARCH) -type f -name "*.c") $(shell find Kernel -type f -name "*.c")  \
-       $(shell find Target/$(TARGET) -type f -name "*.c")
+CSRC := $(shell find arch/$(ARCH) -type f -name "*.c") $(shell find kernel -type f -name "*.c")  \
+       $(shell find target/$(TARGET) -type f -name "*.c")
 
-ASMSRC = $(shell find Arch/$(ARCH) -type f -name "*.S") $(shell find Kernel -type f -name "*.S")  \
-       $(shell find Target/$(TARGET) -type f -name "*.S")
+ASMSRC := $(sort $(shell find arch/$(ARCH) -type f -name "*.S")) $(shell find kernel -type f -name "*.S")  \
+       $(shell find target/$(TARGET) -type f -name "*.S")
 
 # Get the object files.
-OBJ = $(patsubst %.S,%.o,$(ASMSRC)) $(patsubst %.c,%.o,$(CSRC))
+OBJ := $(patsubst %.S,%.o,$(ASMSRC)) $(patsubst %.c,%.o,$(CSRC))
 
 # Get the dependancies.
-DEP = $(patsubst %.c,%.d,$(CSRC))
+DEP := $(patsubst %.c,%.d,$(CSRC))
 
 # Linker script.
-LINK = Arch/$(ARCH)/Link.ld
+LINK := arch/$(ARCH)/link.ld
 
 # Make related files.
-MAKEDEPS = Makefile Rules.mk Config.mk Target/$(TARGET)/Rules.mk
-
-# List phony targets.
-.PHONY: all clean
+MAKEDEPS := Makefile rules.mk config.mk target/$(TARGET)/rules.mk
 
 # The default target.
 all: $(OUTFORMAT)
 
+# List phony targets.
+.PHONY: all clean
+
 # ELF output.
 $(OUTELF): $(OBJ) $(LINK)
-	$(TOOLPREFIX)-ld $(OBJ) -T$(LINK) -o $@
+	$(HOSTLD) $(OBJ) -T$(LINK) -o $@
 
 # Binary output.
 $(OUTBIN): $(OUTELF)
-	$(TOOLPREFIX)-objcopy $(OUTELF) -O binary $@
+	$(HOSTOBJCOPY) $(OUTELF) -O binary $@
 
 # Include dependancy files.
 -include $(DEP)
@@ -74,8 +77,8 @@ clean:
 
 # CC.
 %.o: %.c $(MAKEDEPS)
-	$(TOOLPREFIX)-gcc $(CFLAGS) -IInclude -IKernel/Include -IArch/$(ARCH)/Include -ITarget/$(TARGET)/Include -MMD -MP -c $< -o $@
+	$(HOSTCC) $(CFLAGS) -Iinclude -Ikernel/include -Iarch/$(ARCH)/include -Itarget/$(TARGET)/include -MMD -MP -c $< -o $@
 
 # AS.
 %.o: %.S $(MAKEDEPS)
-	$(TOOLPREFIX)-as -c $< -o $@
+	$(HOSTAS) -c $< -o $@

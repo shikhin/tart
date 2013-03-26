@@ -26,8 +26,10 @@ if [[ ! -t 1 ]]; then
 fi
 
 # Export some common stuff - the defaults, if they aren't in the arguments.
-export PREFIX=$(readlink -f ./Tools)
-export TARGET=arm-none-eabi
+export PREFIX=$(readlink -f ./tools)
+
+# TARGET allowed values.
+# For everything ARM (currently: RPi [BCM2835]): arm-none-eabi
 
 # Parse command line options for prefix & target.
 while getopts "p:t:" optname
