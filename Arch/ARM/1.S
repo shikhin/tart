@@ -32,7 +32,7 @@ Start:
     mov sp, #0x8000
 
     @ TODO: Clear out bss.
-    ldr r0, =Main
+    ldr r0, =Init
     bx r0
 
 @ DON'T RETURN HERE.

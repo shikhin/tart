@@ -16,9 +16,8 @@ Tools/
 *~
 
 ## Output files.
-*.elf
-*.img
-*.kern
+Tart
+*.bin
 
 # Build environment related.
 

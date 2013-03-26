@@ -6,17 +6,13 @@ ifeq ($(TARGET), BCM2835)
     ARCH = ARM
     SUBARCH = armv6k
     CPU = arm1176jzf-s
+
+    # Set CFLAGS.
+    CFLAGS = -mfpu=vfp -mfloat-abi=hard -march=$(SUBARCH) -mcpu=$(CPU)
 endif
 
 # Get the tool prefix.
 # TODO: error if not allowed.
 ifeq ($(ARCH), ARM)
-    TOOL_PREFIX = $(PREFIX)/arm-none-eabi
-endif
-
-# If terminal output, get colors.
-ifeq ($(TERM_OUTPUT), true)
-    BLUE = \033[34m
-    GREEN = \033[92m
-    END = \033[0m
+    TOOLPREFIX = $(PREFIX)/arm-none-eabi
 endif

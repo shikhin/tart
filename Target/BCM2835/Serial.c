@@ -22,6 +22,7 @@
  */
 
 #include <Serial.h>
+#include <MMIO.h>
 
 // HACK: TILL INTERRUPTS WORK.
 

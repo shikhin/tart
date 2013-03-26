@@ -8,8 +8,3 @@ PREFIX = ./Tools/bin
 # Allowed targets: BCM2835.
 # DEFAULT: BCM2835.
 TARGET = BCM2835
-
-# Terminal output or not.
-# Set false if not.
-# DEFAULT: true.
-TERM_OUTPUT = true

@@ -24,54 +24,58 @@
 # Include the config and rules.
 include Config.mk
 include Rules.mk
+include Target/$(TARGET)/Rules.mk
+
+OUTELF = Tart
+OUTBIN = $(OUTELF).bin
 
 # List of CFLAGS.
-CFLAGS := -std=c99 -Wall -Wextra -nostdlib -ffreestanding -lgcc -O2
+CFLAGS += -std=c99 -Wall -Wextra -nostdlib -ffreestanding -lgcc -O2
 
-# Get a list of source files and header files.
-KERNELC := $(shell find Source/Kernel -type f -name "*.c")
-KERNELASM := $(shell find Source/Kernel -type f -name "*.S")
-KERNELHDR := $(shell find Source/Kernel/Include -type f -name "*.h")
+# Get a list of source files.
+CSRC = $(shell find Arch/$(ARCH) -type f -name "*.c") $(shell find Kernel -type f -name "*.c")  \
+       $(shell find Target/$(TARGET) -type f -name "*.c")
+
+ASMSRC = $(shell find Arch/$(ARCH) -type f -name "*.S") $(shell find Kernel -type f -name "*.S")  \
+       $(shell find Target/$(TARGET) -type f -name "*.S")
 
 # Get the object files.
-KERNELOBJ := $(patsubst %.S,%.o,$(KERNELASM)) $(patsubst %.c,%.o,$(KERNELC))
+OBJ = $(patsubst %.S,%.o,$(ASMSRC)) $(patsubst %.c,%.o,$(CSRC))
 
 # Get the dependancies.
-KERNELDEP := $(patsubst %.c,%.d,$(KERNELC))
+DEP = $(patsubst %.c,%.d,$(CSRC))
+
+# Linker script.
+LINK = Arch/$(ARCH)/Link.ld
+
+# Make related files.
+MAKEDEPS = Makefile Rules.mk Config.mk Target/$(TARGET)/Rules.mk
 
 # List phony targets.
-.PHONY: all clean todo
+.PHONY: all clean
 
 # The default target.
-all: Tart.kern
+all: $(OUTFORMAT)
 
-# Tart.kern target (in reality, this is the Kernel).
-Tart.kern: $(KERNELOBJ) Source/Kernel/Link.ld
-	@echo -e "  $(BLUE)[LD]$(END)    Tart.elf"
-	@$(ARMGNU)-ld $(KERNELOBJ) -TSource/Kernel/Link.ld -o Tart.elf
+# ELF output.
+$(OUTELF): $(OBJ) $(LINK)
+	$(TOOLPREFIX)-ld $(OBJ) -T$(LINK) -o $@
 
-	@echo -e "  $(BLUE)[OBJ]$(END)   Tart.kern"
-	@$(ARMGNU)-objcopy Tart.elf -O binary Tart.kern
+# Binary output.
+$(OUTBIN): $(OUTELF)
+	$(TOOLPREFIX)-objcopy $(OUTELF) -O binary $@
 
-# Include $(KERNELDEP).
--include $(KERNELDEP)
+# Include dependancy files.
+-include $(DEP)
 
 # Clean.
 clean: 
-	@$(foreach File,$(KERNELOBJ),echo "Removed" $(File);)
-	@$(foreach File,$(KERNELDEP),echo "Removed" $(File);)
-
-	@echo "Removed Tart.elf"
-	@echo "Removed Tart.kern"
-
-	-@$(RM) $(wildcard $(KERNELOBJ) $(KERNELDEP) Tart.elf Tart.kern)
+	-$(RM) $(wildcard $(OBJ) $(DEP) $(OUTELF) $(OUTFORMAT))
 
 # CC.
-%.o: %.c Makefile
-	@echo -e "  $(BLUE)[CC]$(END)   " $<
-	@$(ARMGNU)-gcc $(CFLAGS) -ISource/Kernel/Include -ISource/Include -MMD -MP -c $< -o $@
+%.o: %.c $(MAKEDEPS)
+	$(TOOLPREFIX)-gcc $(CFLAGS) -IInclude -IKernel/Include -IArch/$(ARCH)/Include -ITarget/$(TARGET)/Include -MMD -MP -c $< -o $@
 
 # AS.
-%.o: %.S Makefile
-	@echo -e "  $(BLUE)[AS]$(END)   " $<
-	@$(ARMGNU)-as -c $< -o $@
+%.o: %.S $(MAKEDEPS)
+	$(TOOLPREFIX)-as -c $< -o $@
