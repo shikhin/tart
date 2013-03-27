@@ -1,6 +1,7 @@
 # Rules for Tart.
 
 # Get the arch.
+# Move the target stuff to rules.mk in Target.
 ifeq ($(TARGET), bcm2835)
     ARCH := arm
     SUBARCH := armv6k

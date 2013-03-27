@@ -33,3 +33,10 @@ GLOBAL(Stub)
 FUNCTION(Stub)
     wfe
     b Stub
+
+/*
+ * SWI.
+ */
+GLOBAL(SWIHandler)
+FUNCTION(SWIHandler)
+    movs pc, r14

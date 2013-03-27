@@ -84,7 +84,7 @@ FUNCTION(_Start)
 
 ResetHandlerP:              .word Start
 UndefinedInstrHandlerP:     .word Stub
-SWIHandlerP:                .word Stub
+SWIHandlerP:                .word SWIHandler
 PrefetchAbortHandlerP:      .word Stub
 DataAbortHandlerP:          .word Stub
 UnusedP:                    .word Stub
@@ -92,6 +92,9 @@ IRQHandlerP:                .word Stub
 FIQHandlerP:                .word Stub
 
 Start:
+    // TODO: enable low vectors, and disable/enable vectored IRQs based on target.
+    // TODO: endianness.
+
     // Move vectors to 0x00000000.
     mov r3, r0
     ldr r4, =.Vectors
@@ -139,7 +142,7 @@ Start:
     // Jump to Init().
     ldr r0, =Init
     bx r0
-
+    
 // DON'T RETURN HERE.
 .Halt:
     wfe
