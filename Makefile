@@ -35,18 +35,21 @@ include target/$(TARGET)/rules.mk
 # List of CFLAGS.
 CFLAGS += -std=c99 -Wall -Wextra -nostdlib -ffreestanding -lgcc
 
+# Includes.
+CPPFLAGS := -Iinclude -Ikernel/include -Iarch/$(ARCH)/include -Itarget/$(TARGET)/include
+
 # Get a list of source files.
 CSRC := $(shell find arch/$(ARCH) -type f -name "*.c") $(shell find kernel -type f -name "*.c")  \
        $(shell find target/$(TARGET) -type f -name "*.c")
 
-ASMSRC := $(sort $(shell find arch/$(ARCH) -type f -name "*.S")) $(shell find kernel -type f -name "*.S")  \
+ASMSRC := $(shell find arch/$(ARCH) -type f -name "*.S") $(shell find kernel -type f -name "*.S")  \
        $(shell find target/$(TARGET) -type f -name "*.S")
 
 # Get the object files.
 OBJ := $(patsubst %.S,%.o,$(ASMSRC)) $(patsubst %.c,%.o,$(CSRC))
 
 # Get the dependancies.
-DEP := $(patsubst %.c,%.d,$(CSRC))
+DEP := $(patsubst %.S,%.d,$(ASMSRC)) $(patsubst %.c,%.d,$(CSRC))
 
 # Linker script.
 LINK := arch/$(ARCH)/link.ld
@@ -77,8 +80,8 @@ clean:
 
 # CC.
 %.o: %.c $(MAKEDEPS)
-	$(HOSTCC) $(CFLAGS) -Iinclude -Ikernel/include -Iarch/$(ARCH)/include -Itarget/$(TARGET)/include -MMD -MP -c $< -o $@
+	$(HOSTCC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c $< -o $@
 
 # AS.
 %.o: %.S $(MAKEDEPS)
-	$(HOSTAS) -c $< -o $@
+	$(HOSTCC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c $< -o $@

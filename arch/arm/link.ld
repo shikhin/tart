@@ -21,21 +21,24 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-ENTRY(Start)
+ENTRY(_Start)
 
 SECTIONS
 {
     /* Starts at 0x8000. */
     .text 0x8000 :
     {
+        KEEP(*(.text.boot))
         *(.text)
         *(.rodata)
     }
 
-    .data :
+    .data ALIGN(4) :
     {
         *(.data)
     }
+
+    . = ALIGN(4);
 
     /* The physical file ends here. */
     FileEnd = .;
@@ -45,7 +48,7 @@ SECTIONS
 
     .bss :
     {
-        bss = .;
+        BSSStart = .;
         *(.bss)
     }
 
