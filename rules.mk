@@ -1,15 +1,10 @@
 # Rules for Tart.
 
 # Get the arch.
-# Move the target stuff to rules.mk in Target.
 ifeq ($(TARGET), bcm2835)
-    ARCH := arm
-    SUBARCH := armv6k
-    CPU := arm1176jzf-s
 
-    # Set CFLAGS.
-    CFLAGS := -mfpu=vfp -mfloat-abi=hard -march=$(SUBARCH) -mcpu=$(CPU) -DARMV=6
 else
+    # Error if TARGET not recognized.
     $(error TARGET set to $(TARGET), which is not a recognized target)
 endif
 

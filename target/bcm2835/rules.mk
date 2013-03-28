@@ -2,4 +2,10 @@
 # Allowed: $(OUTBIN), $(OUTELF).
 OUTFORMAT := $(OUTBIN)
 
-# TODO: Add target based rules here; also add vectored IRQ thingy.
+# Define specific variables for bcm2835.
+ARCH := arm
+SUBARCH := armv6k
+CPU := arm1176jzf-s
+
+# Set CFLAGS.
+CFLAGS := -mfpu=vfp -mfloat-abi=hard -march=$(SUBARCH) -mcpu=$(CPU) -DARMV=6

@@ -29,8 +29,8 @@ CCFLAGS ?= -O2
 
 # Include the config and rules.
 include config.mk
-include rules.mk
 include target/$(TARGET)/rules.mk
+include rules.mk
 
 # List of CFLAGS.
 CFLAGS += -std=c99 -Wall -Wextra -nostdlib -ffreestanding -lgcc

@@ -1,5 +1,5 @@
 /*
- * Generic ARM.
+ * Generic ASM includes.
  *
  * Copyright (c) 2013, Shikhin Sethi
  *

@@ -1,5 +1,5 @@
 /*
- * Exceptions support.
+ * ARM utility functions.
  *
  * Copyright (c) 2013, Shikhin Sethi
  *
@@ -21,15 +21,13 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <asm.h>
-
-// Text section.
-.text
+#ifndef _UTILITY_H
+#define _UTILITY_H
 
 /*
- * Stub (for all exceptions I haven't bothered with yet).
+ * Create a delay for 'n' cycles.
+ *     uint32_t n -> the number of cycles to delay for.
  */
-GLOBAL(Stub)
-FUNCTION(Stub)
-    wfe
-    b Stub
+extern void Delay(uint32_t n);
+
+#endif /* _UTILITY_H */

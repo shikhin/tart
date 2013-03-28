@@ -22,6 +22,7 @@
  */
 
 #include <asm.h>
+#include <arm.h>
 
 #if ARMV < 6
     #error ARM versions below ARMv6 not supported yet.
@@ -31,14 +32,6 @@
 
 // Text section.
 .section ".text.boot"
-
-// ARM processor modes.
-#define FIQ_MODE       #0b10001 
-#define IRQ_MODE       #0b10010 
-#define SVC_MODE       #0b10011 
-#define ABT_MODE       #0b10111 
-#define UND_MODE       #0b11011 
-#define SYS_MODE       #0b11111
 
 // Basic architecture initialization (stacks and modes).
 .macro BASIC_ARCH_INIT
@@ -65,6 +58,11 @@
  *     r0  -> 0x00000000.
  *     r1  -> machine type number.
  *     r2  -> start address of ATAGS.
+ *
+ * ARMv6:
+ *     E bit in CPSR is 0 (little endian).
+ *     EE (exception endian), A (alignment check) and B (big endian) bit in CP15 register 1 is 0.
+ *     U (unaligned access) bit in CP15 register 1 is 1.
  */
 GLOBAL(_Start)
 FUNCTION(_Start)
@@ -84,7 +82,7 @@ FUNCTION(_Start)
 
 ResetHandlerP:              .word Start
 UndefinedInstrHandlerP:     .word Stub
-SWIHandlerP:                .word SWIHandler
+SWIHandlerP:                .word Stub
 PrefetchAbortHandlerP:      .word Stub
 DataAbortHandlerP:          .word Stub
 UnusedP:                    .word Stub
@@ -93,7 +91,6 @@ FIQHandlerP:                .word Stub
 
 Start:
     // TODO: enable low vectors, and disable/enable vectored IRQs based on target.
-    // TODO: endianness.
 
     // Move vectors to 0x00000000.
     mov r3, r0
@@ -140,8 +137,8 @@ Start:
     blt .ClearBSS
 
     // Jump to Init().
-    ldr r0, =Init
-    bx r0
+    ldr r4, =Init
+    blx r4
     
 // DON'T RETURN HERE.
 .Halt:
