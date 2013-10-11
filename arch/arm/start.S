@@ -28,26 +28,24 @@
     #error ARM versions below ARMv6 not supported yet.
 #endif
 
-#define STACK_SIZE     4096
+#define STACK_SIZE     0x1000
 
 // Text section.
 .section ".text.boot"
 
-// Basic architecture initialization (stacks and modes).
+/*
+ * Basic architecture initialization (stacks and modes).
+ */
 .macro BASIC_ARCH_INIT
 
 // For ARMv6 and above.
 #if ARMV >= 6
     // Enable Imprecise Data Aborts, and switch to FIQ mode. 
-    cpsie a, FIQ_MODE
+    cpsie a, #FIQ_MODE
     ldr sp, =FIQStack + (STACK_SIZE/4)
 
-    // Switch to abort mode.
-    cps ABT_MODE
-    ldr sp, =AbortStack + STACK_SIZE
-
     // Switch back to supervisor mode.
-    cps SVC_MODE
+    cps #SVC_MODE
 #endif
 
 .endm
@@ -90,24 +88,30 @@ IRQHandlerP:                .word Stub
 FIQHandlerP:                .word Stub
 
 Start:
-    // TODO: enable low vectors, and disable/enable vectored IRQs based on target.
+    // Read control register (register 1) from CP15.
+    mrc p15, 0, r3, c1, c0, 0
+
+#ifndef VECTORED_IRQ
+    // If vectored IRQs are not present, enable fixed IRQ vectors.
+    bic r3, #(1 << 24)
+#endif
+
+    // Enable low vectors.
+    bic r3, #(1 << 15)
+
+    // Write r3 back into CP15.
+    mcr p15, 0, r3, c1, c0, 0
 
     // Move vectors to 0x00000000.
     mov r3, r0
     ldr r4, =.Vectors
     
     // 64 bytes.
-    ldmia r4!, {r5-r8}
-    stmia r3!, {r5-r8}
+    ldmia r4!, {r5-r12}
+    stmia r3!, {r5-r12}
 
-    ldmia r4!, {r5-r8}
-    stmia r3!, {r5-r8}
-    
-    ldmia r4!, {r5-r8}
-    stmia r3!, {r5-r8}
-    
-    ldmia r4!, {r5-r8}
-    stmia r3!, {r5-r8}
+    ldmia r4!, {r5-r12}
+    stmia r3!, {r5-r12}
 
     // Setup the stack (for supervisor mode).
     ldr sp, =Stack + STACK_SIZE
@@ -118,7 +122,7 @@ Start:
     ldr r3, =BSSStart
     ldr r4, =KernelEnd
 
-    // Clear out from r5 to r8.
+    // Clear out from r5 to r12.
     mov r5, r0
     mov r6, r0
     mov r7, r0
@@ -137,8 +141,7 @@ Start:
     blt .ClearBSS
 
     // Jump to Init().
-    ldr r4, =Init
-    blx r4
+    blx Init
     
 // DON'T RETURN HERE.
 .Halt:
@@ -164,10 +167,6 @@ FUNCTION(Delay)
 
 // Stack for supervisor mode.
 DATA(Stack)
-    .skip STACK_SIZE
-
-// Stack for abort mode.
-DATA(AbortStack)
     .skip STACK_SIZE
 
 // Stack for FIQ (1/4th the standard stack size).

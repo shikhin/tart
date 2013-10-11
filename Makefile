@@ -78,6 +78,10 @@ $(OUTBIN): $(OUTELF)
 clean: 
 	-$(RM) $(wildcard $(OBJ) $(DEP) $(OUTELF) $(OUTFORMAT))
 
+# Dog.
+dog:
+	$(warning Experimental dog generator. Don't try it out; the default size isn't set, so-)
+
 # CC.
 %.o: %.c $(MAKEDEPS)
 	$(HOSTCC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c $< -o $@
