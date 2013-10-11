@@ -1,53 +1,42 @@
 #!/bin/sh
 
 # The download a file function.
-function download()
+download()
 {
     local url=$1
     
     # Download the file.
-    wget  --progress=dot -c -P tools $url 2>&1 | grep --line-buffered "%" | sed -u -e "s,\.,,g" -e "s,\,,,g" | awk '{printf("\b\b\b\b%4s", $2)}'
+    wget  --progress=dot -c -P tools $url 2>&1 | grep "%" | sed -u -e "s,\.,,g" -e "s,\,,,g" | awk '{printf("\b\b\b\b%4s", $2)}'
 
     # Delete everything and show done.
     echo -ne "\b\b\b\b"
-    echo -e " $Green[DONE]$End"
+    echo " [DONE]"
 }
 
-# Some color codes.
-Blue='\033[34m'
-Green='\033[92m'
-End='\033[0m'
-
-# Ensure colors are only there for terminal output.
-if [[ ! -t 1 ]]; then
-    Blue=''
-    End=''
-    Green=''
-fi
-
 # Export some common stuff - the defaults, if they aren't in the arguments.
-PREFIX ?= $(readlink -f ./tools)
+test ! -n "$PREFIX" && PREFIX=$(readlink -f ./tools) #Bourne Shell requires there to be no spaces before '='
 
 # TARGET allowed values.
 # For everything ARM (currently: RPi [BCM2835]): bcm2835
-TARGET ?= bcm2835
+test ! -n "$TARGET" && TARGET=bcm2835 # See above
 
 # Parse command line options for prefix & target.
 while getopts "p:t:" optname
     do
       case "$optname" in
         "p")
-          PREFIX := $OPTARG
+          PREFIX=$OPTARG
           ;;
         "t")
-          TARGET := $OPTARG 
+          TARGET=$OPTARG 
           ;;
       esac
     done
 
-ifeq ($(TARGET),bcm2835)
-    TARGET := arm-none-eabi
-endif
+if test z"$TARGET" = z"bcm2835"
+then
+    TARGET=arm-none-eabi
+fi
 
 # Make the build directory.
 mkdir -p tools
@@ -55,22 +44,22 @@ mkdir -p tools
 # Get the tools.
 
 # Binutils.
-echo -ne "  $Blue[WGET]$End  tools/binutils-2.23.1.tar.bz2,    "
-download "http://ftp.gnu.org/gnu/binutils/binutils-2.23.1.tar.bz2"
+echo -n "  [WGET]  tools/binutils-2.23.1.tar.bz2,    "
+download "http://ftp.gnu.org/gnu/binutils/binutils-2.23.2.tar.bz2"
 
 # GCC.
-echo -ne "  $Blue[WGET]$End  tools/gcc-4.7.2.tar.bz2,    "
-download "http://ftp.gnu.org/gnu/gcc/gcc-4.7.2/gcc-4.7.2.tar.bz2"
+echo -n "  [WGET]  tools/gcc-4.7.2.tar.bz2,    "
+download "http://ftp.gnu.org/gnu/gcc/gcc-4.8.1/gcc-4.8.1.tar.bz2"
 
 # Untar them.
 
 # Binutils.
-echo -e "  $Blue[UNTAR]$End tools/binutils-2.23.1.tar.bz2"
+echo "  [UNTAR] tools/binutils-2.23.1.tar.bz2"
 tar -xf tools/binutils-2.23.1.tar.bz2 -C tools >/dev/null
 rm tools/binutils-2.23.1.tar.bz2
 
 # GCC.
-echo -e "  $Blue[UNTAR]$End tools/gcc-4.7.2.tar.bz2"
+echo "  [UNTAR] tools/gcc-4.7.2.tar.bz2"
 tar -xf tools/gcc-4.7.2.tar.bz2 -C tools >/dev/null
 rm tools/gcc-4.7.2.tar.bz2
 
@@ -80,27 +69,27 @@ rm tools/gcc-4.7.2.tar.bz2
 mkdir -p tools/build-binutils
 
 # Configure.
-echo -e "  $Blue[BINUT]$End Configuring"
+echo "  [BINUT] Configuring"
 cd tools/build-binutils && ../binutils-2.23.1/configure --target=$TARGET --prefix=$PREFIX --disable-nls
 cd ../../
 
 # Compile.
-echo -e "  $Blue[BINUT]$End Compiling"
+echo "  [BINUT] Compiling"
 make -C tools/build-binutils all
 
 # Install.
-echo -e "  $Blue[BINUT]$End Installing"
+echo "  [BINUT] Installing"
 make -C tools/build-binutils install
 
 # Clean.
-echo -e "  $Blue[BINUT]$End Cleaning"
+echo "  [BINUT] Cleaning"
 rm -rf tools/build-binutils tools/binutils-2.23.1
 
 # GCC.
 mkdir -p tools/build-gcc
 
 # Configure.
-echo -e "  $Blue[GCC]$End   Configuring"
+echo "  [GCC]   Configuring"
 export PATH=$PATH:$PREFIX/bin
 cd tools/build-gcc && ../gcc-4.7.2/configure --target=$TARGET --prefix=$PREFIX --disable-nls --enable-languages=c --without-headers --with-gnu-as --with-gnu-ld
 cd ../../
@@ -114,21 +103,21 @@ export STRIP_FOR_TARGET=$PREFIX/bin/$TARGET-elf-strip
 export AS_FOR_TARGET=$PREFIX/bin/$TARGET-elf-as
 
 # Compile.
-echo -e "  $Blue[GCC]$End   Compiling"
+echo "  [GCC]   Compiling"
 make -C tools/build-gcc all-gcc
 
 # Install.
-echo -e "  $Blue[GCC]$End   Installing"
+echo "  [GCC]   Installing"
 make -C tools/build-gcc install-gcc
 
 # Compile libgcc.
-echo -e "  $Blue[LIBGCC]$End Compiling"
+echo "  [LIBGCC] Compiling"
 make -C tools/build-gcc all-target-libgcc CFLAGS_FOR_TARGET="-g -O2"
 
 # Install
-echo -e "  $Blue[LIBGCC]$End Installing"
+echo "  [LIBGCC] Installing"
 make -C tools/build-gcc install-target-libgcc
 
 # Clean.
-echo -e "  $Blue[GCC]$End   Cleaning"
+echo "  [GCC]   Cleaning"
 rm -rf tools/build-gcc tools/gcc-4.7.2
