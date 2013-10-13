@@ -16,7 +16,7 @@ tools/
 *~
 
 ## Output files.
-tart
+hart
 *.bin
 
 # Build environment related.
