@@ -14,11 +14,12 @@ download()
 }
 
 # Export some common stuff - the defaults, if they aren't in the arguments.
-test ! -n "$PREFIX" && PREFIX=$(readlink -f ./tools) #Bourne Shell requires there to be no spaces before '='
+test ! -n "$PREFIX" && PREFIX=$(readlink -f ./tools)
 
-# TARGET allowed values.
-# For everything ARM (currently: RPi [BCM2835]): bcm2835
-test ! -n "$TARGET" && TARGET=bcm2835 # See above
+# The TARGET.
+# Currently allowed values: bcm2835 [RPi]
+# TODO: probably spit out error message.
+test ! -n "$TARGET" && TARGET=bcm2835
 
 # Parse command line options for prefix & target.
 while getopts "p:t:" optname
@@ -44,24 +45,24 @@ mkdir -p tools
 # Get the tools.
 
 # Binutils.
-echo -n "  [WGET]  tools/binutils-2.23.1.tar.bz2,    "
+echo -n "  [WGET]  tools/binutils-2.23.2.tar.bz2,    "
 download "http://ftp.gnu.org/gnu/binutils/binutils-2.23.2.tar.bz2"
 
 # GCC.
-echo -n "  [WGET]  tools/gcc-4.7.2.tar.bz2,    "
+echo -n "  [WGET]  tools/gcc-4.8.1.tar.bz2,    "
 download "http://ftp.gnu.org/gnu/gcc/gcc-4.8.1/gcc-4.8.1.tar.bz2"
 
 # Untar them.
 
 # Binutils.
-echo "  [UNTAR] tools/binutils-2.23.1.tar.bz2"
-tar -xf tools/binutils-2.23.1.tar.bz2 -C tools >/dev/null
-rm tools/binutils-2.23.1.tar.bz2
+echo "  [UNTAR] tools/binutils-2.23.2.tar.bz2"
+tar -xf tools/binutils-2.23.2.tar.bz2 -C tools >/dev/null
+rm tools/binutils-2.23.2.tar.bz2
 
 # GCC.
-echo "  [UNTAR] tools/gcc-4.7.2.tar.bz2"
-tar -xf tools/gcc-4.7.2.tar.bz2 -C tools >/dev/null
-rm tools/gcc-4.7.2.tar.bz2
+echo "  [UNTAR] tools/gcc-4.8.1.tar.bz2"
+tar -xf tools/gcc-4.8.1.tar.bz2 -C tools >/dev/null
+rm tools/gcc-4.8.1.tar.bz2
 
 # Build the tools.
 
@@ -70,7 +71,7 @@ mkdir -p tools/build-binutils
 
 # Configure.
 echo "  [BINUT] Configuring"
-cd tools/build-binutils && ../binutils-2.23.1/configure --target=$TARGET --prefix=$PREFIX --disable-nls
+cd tools/build-binutils && ../binutils-2.23.2/configure --target=$TARGET --prefix=$PREFIX --disable-nls
 cd ../../
 
 # Compile.
@@ -83,7 +84,7 @@ make -C tools/build-binutils install
 
 # Clean.
 echo "  [BINUT] Cleaning"
-rm -rf tools/build-binutils tools/binutils-2.23.1
+rm -rf tools/build-binutils tools/binutils-2.23.2
 
 # GCC.
 mkdir -p tools/build-gcc
@@ -91,7 +92,7 @@ mkdir -p tools/build-gcc
 # Configure.
 echo "  [GCC]   Configuring"
 export PATH=$PATH:$PREFIX/bin
-cd tools/build-gcc && ../gcc-4.7.2/configure --target=$TARGET --prefix=$PREFIX --disable-nls --enable-languages=c --without-headers --with-gnu-as --with-gnu-ld
+cd tools/build-gcc && ../gcc-4.8.1/configure --target=$TARGET --prefix=$PREFIX --disable-nls --enable-languages=c --without-headers --with-gnu-as --with-gnu-ld
 cd ../../
 
 export LD_FOR_TARGET=$PREFIX/bin/$TARGET-elf-ld
@@ -120,4 +121,4 @@ make -C tools/build-gcc install-target-libgcc
 
 # Clean.
 echo "  [GCC]   Cleaning"
-rm -rf tools/build-gcc tools/gcc-4.7.2
+rm -rf tools/build-gcc tools/gcc-4.8.1

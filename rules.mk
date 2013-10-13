@@ -1,7 +1,7 @@
 # Rules for Tart.
 
 # Get the arch.
-ifeq ($(TARGET), bcm2835)
+ifeq ($(TARGET), rpi)
 
 else
     # Error if TARGET not recognized.

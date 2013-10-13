@@ -5,9 +5,9 @@
 PREFIX ?= ./tools/bin
 
 # The target.
-# Allowed targets: bcm2835.
-# DEFAULT: bcm2835.
-TARGET ?= bcm2835
+# Allowed targets: rpi.
+# DEFAULT: rpi.
+TARGET ?= rpi
 
 # CC flags.
 # User can adopt these to his own, and uncomment the line.
