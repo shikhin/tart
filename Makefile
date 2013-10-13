@@ -11,7 +11,7 @@ include platform/$(PLATFORM)/rules.mk
 include rules.mk
 
 # List of CFLAGS.
-CFLAGS += -std=c99 -Wall -Wextra -nostdlib -ffreestanding -lgcc
+CFLAGS += -std=c99 -Wall -Wextra -nostdlib -ffreestanding -lgcc $(CCFLAGS)
 
 # Includes.
 CPPFLAGS := -Iinclude -Ikernel/include -Iarch/$(ARCH)/include -Itarget/$(TARGET)/include -Iplatform/$(PLATFORM)/include
@@ -33,7 +33,7 @@ DEP := $(patsubst %.S,%.d,$(ASMSRC)) $(patsubst %.c,%.d,$(CSRC))
 LINK := arch/$(ARCH)/link.ld
 
 # Make related files.
-MAKEDEPS := Makefile rules.mk config.mk target/$(TARGET)/rules.mk platform/$(TARGET)/rules.mk
+MAKEDEPS := Makefile rules.mk config.mk target/$(TARGET)/rules.mk platform/$(PLATFORM)/rules.mk
 
 # The default target.
 all: $(OUTFORMAT)
