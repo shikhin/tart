@@ -1,4 +1,4 @@
-ENTRY(_Start)
+ENTRY(_start)
 
 SECTIONS
 {
@@ -18,20 +18,19 @@ SECTIONS
     . = ALIGN(4);
 
     /* The physical file ends here. */
-    FileEnd = .;
+    file_end = .;
 
     /* Align to 16 byte boundary. */
     . = ALIGN(16);
 
     .bss :
     {
-        BSSStart = .;
+        bss_start = .;
         *(.bss)
     }
 
     /* Align to 16 byte boundary. */
     . = ALIGN(16);
 
-    /* Kernel ends here. */
-    KernelEnd = .;
+    bss_end = .;
 }

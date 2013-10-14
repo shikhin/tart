@@ -19,7 +19,7 @@
 #if ARMV >= 6
     // Enable Imprecise Data Aborts, and switch to FIQ mode. 
     cpsie a, #FIQ_MODE
-    ldr sp, =FIQStack + (STACK_SIZE/4)
+    ldr sp, =fiq_stack + (STACK_SIZE/4)
 
     // Switch back to supervisor mode.
     cps #SVC_MODE
@@ -39,32 +39,32 @@
  *     EE (exception endian), A (alignment check) and B (big endian) bit in CP15 register 1 is 0.
  *     U (unaligned access) bit in CP15 register 1 is 1.
  */
-GLOBAL(_Start)
-FUNCTION(_Start)
+GLOBAL(_start)
+FUNCTION(_start)
 
 # Since these can only branch to 32MiB from instruction, put the address
 # of the handlers nearby, and copy them too.
-.Vectors:
+.vectors:
     # Execution starts here too, so we set this to "Start."
-    ldr pc, ResetHandlerP
-    ldr pc, UndefinedInstrHandlerP
-    ldr pc, SWIHandlerP
-    ldr pc, PrefetchAbortHandlerP
-    ldr pc, DataAbortHandlerP
-    ldr pc, UnusedP
-    ldr pc, IRQHandlerP
-    ldr pc, FIQHandlerP
+    ldr pc, reset
+    ldr pc, ud
+    ldr pc, swi
+    ldr pc, prefetch_abort
+    ldr pc, data_abort
+    ldr pc, unused
+    ldr pc, irq
+    ldr pc, fiq
 
-ResetHandlerP:              .word Start
-UndefinedInstrHandlerP:     .word Stub
-SWIHandlerP:                .word Stub
-PrefetchAbortHandlerP:      .word Stub
-DataAbortHandlerP:          .word Stub
-UnusedP:                    .word Stub
-IRQHandlerP:                .word Stub
-FIQHandlerP:                .word Stub
+reset:              .word start
+ud:                 .word stub
+swi:                .word stub
+prefetch_abort:     .word stub
+data_abort:         .word stub
+unused:             .word stub
+irq:                .word stub
+fiq:                .word stub
 
-Start:
+start:
     // Read control register (register 1) from CP15.
     mrc p15, 0, r3, c1, c0, 0
 
@@ -81,7 +81,7 @@ Start:
 
     // Move vectors to 0x00000000.
     mov r3, r0
-    ldr r4, =.Vectors
+    ldr r4, =.vectors
     
     // 64 bytes.
     ldmia r4!, {r5-r12}
@@ -91,13 +91,13 @@ Start:
     stmia r3!, {r5-r12}
 
     // Setup the stack (for supervisor mode).
-    ldr sp, =Stack + STACK_SIZE
+    ldr sp, =stack + STACK_SIZE
 
     BASIC_ARCH_INIT
 
     // Clear out bss.
-    ldr r3, =BSSStart
-    ldr r4, =KernelEnd
+    ldr r3, =bss_start
+    ldr r4, =bss_end
 
     // Clear out from r5 to r12.
     mov r5, r0
@@ -109,33 +109,33 @@ Start:
     mov r11, r0
     mov r12, r0
 
-.ClearBSS:
+.bss_zero:
     // Zero it out.
     stmia r3!, {r5-r12}
 
     // If lower than end, continue.
     cmp r3, r4
-    blt .ClearBSS
+    blt .bss_zero
 
-    // Jump to Init().
-    blx Init
+    // Jump to init().
+    blx init
     
 // DON'T RETURN HERE.
-.Halt:
+.halt:
     wfe
-    b .Halt
+    b .halt
 
 // Utility functions.
 
 /*
  * Create a delay for 'n' cycles.
- *     r0 -> the number of cycles to delay for.
+ *     r0 -> the minimum number of cycles to delay for.
  */
-GLOBAL(Delay)
-FUNCTION(Delay)
+GLOBAL(delay)
+FUNCTION(delay)
     // Subtract 1 and keep looping till not 0.
     subs r0, r0, #1
-    bne Delay
+    bne delay
 
     bx lr
 
@@ -143,9 +143,9 @@ FUNCTION(Delay)
 .bss
 
 // Stack for supervisor mode.
-DATA(Stack)
+DATA(stack)
     .skip STACK_SIZE
 
 // Stack for FIQ (1/4th the standard stack size).
-DATA(FIQStack)
+DATA(fiq_stack)
     .skip STACK_SIZE/4

@@ -1,14 +1,11 @@
-#include <serial.h>
-#include <mmio.h>
-
-// HACK: TILL INTERRUPTS WORK.
+#include <uart.h>
 
 /*
  * Initializes the UART, making it available for communication.
  */
-/*
-void SerialInit()
+void uart_init(void)
 {
+    /*
     // Disable UART0.
     MMIORegWrite(UART0_CR, 0x00000000);
 
@@ -48,20 +45,20 @@ void SerialInit()
 
     // Enable UART0, receive & transfer part of UART.
     MMIORegWrite(UART0_CR, (1 << 0) | (1 << 8) | (1 << 9));
+    */
 }
-*/
 
 /*
  * Transmit a byte via UART0.
- *    uint8_t Byte -> Byte to send.
+ *    uint8_t byte.
  */
-void SerialTransmit(uint8_t Byte)
+void uart_transmit(uint8_t byte)
 {
     // Keep trying.
     while(1)
     {
         // If transmit FIFO isn't full.
-        if(!(MMIORegRead(UART0_FR) & (1 << 5)))
+        if(!(*(volatile uint32_t*)(UART0_FR) & (1 << 5)))
         {
             // Break.
             break;
@@ -69,22 +66,22 @@ void SerialTransmit(uint8_t Byte)
     }
 
     // So transmit FIFO isn't full, transmit the byte.
-    MMIORegWrite(UART0_DR, (uint32_t)Byte);
+    *(volatile uint32_t*)UART0_DR = byte;
 }
 
 /*
  * Receive a byte via UART0.
  *
  * Returns:
- *    uint8_t -> Byte received.
+ *    uint8_t.
  */
-uint8_t SerialReceive()
+uint8_t uart_receive(void)
 {
     // Keep trying.
     while(1)
     {
         // If receive FIFO isn't empty, break.
-        if(!(MMIORegRead(UART0_FR) & (1 << 4)))
+        if(!(*(volatile uint32_t*)(UART0_FR) & (1 << 4)))
         {
             // Break.
             break;
@@ -92,5 +89,5 @@ uint8_t SerialReceive()
     }
 
     // So receive FIFO isn't empty, receive a byte.
-    return (uint8_t)(MMIORegRead(UART0_DR));
+    return (*(volatile uint32_t*)(UART0_DR));
 }

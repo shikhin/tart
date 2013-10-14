@@ -1,5 +1,5 @@
-#ifndef _SERIAL_H
-#define _SERIAL_H
+#ifndef _UART_H
+#define _UART_H
 
 #include <stdint.h>
 #include <gpio.h>
@@ -30,20 +30,20 @@
 /*
  * Initializes the UART, making it available for communication.
  */
-void SerialInit(void);
+void uart_init(void);
 
 /*
  * Transmit a byte via UART0.
- *    uint8_t Byte -> Byte to send.
+ *    uint8_t byte.
  */
-void SerialTransmit(uint8_t Byte);
+void uart_transmit(uint8_t byte);
 
 /*
  * Receive a byte via UART0.
  *
  * Returns:
- *    uint8_t -> Byte received.
+ *    uint8_t.
  */
-uint8_t SerialReceive(void);
+uint8_t uart_receive(void);
 
-#endif /* _SERIAL_H */
+#endif /* _UART_H */

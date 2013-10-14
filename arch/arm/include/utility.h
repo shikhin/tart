@@ -3,8 +3,8 @@
 
 /*
  * Create a delay for 'n' cycles.
- *     uint32_t n -> the number of cycles to delay for.
+ *     uint32_t n -> the minimum number of cycles to delay for.
  */
-extern void Delay(uint32_t n);
+extern void delay(uint32_t n);
 
 #endif /* _UTILITY_H */

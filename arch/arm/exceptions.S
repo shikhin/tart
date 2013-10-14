@@ -10,9 +10,9 @@
  * Macro for exception prologue.
  *     Offset -> offset to PC, to the particular instruction to return to.
  */
-.macro EXCEPTION_PROLOGUE Offset, SwitchMode
+.macro EXCEPTION_PROLOGUE offset, switch_mode
     # Adjust LR to offset.
-    sub lr, \Offset
+    sub lr, \offset
     
     // Save SPSR and LR onto the SVC stack.
     srsdb #SVC_MODE!
@@ -47,7 +47,7 @@
 /*
  * Stub (for all exceptions I haven't bothered with yet).
  */
-GLOBAL(Stub)
-FUNCTION(Stub)
+GLOBAL(stub)
+FUNCTION(stub)
     EXCEPTION_PROLOGUE #0, #1
     EXCEPTION_EPILOGUE

@@ -1,12 +1,14 @@
-#include <serial.h>
+#include <uart.h>
 
 /*
  * Init kernel.
  */
-void Init()
+void init()
 {
+    uart_init();
+
     while(1)
     {
-        SerialTransmit(SerialReceive());
+        uart_transmit(uart_receive());
     }
 }
