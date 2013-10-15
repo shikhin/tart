@@ -1,3 +1,7 @@
+/*
+ * UART handling code.
+ */
+
 #include <uart.h>
 
 /*
@@ -55,14 +59,11 @@ void uart_init(void)
 void uart_transmit(uint8_t byte)
 {
     // Keep trying.
-    while(1)
+    while (1)
     {
         // If transmit FIFO isn't full.
-        if(!(*(volatile uint32_t*)(UART0_FR) & (1 << 5)))
-        {
-            // Break.
+        if (!(*(volatile uint32_t*)(UART0_FR) & (1 << 5)))
             break;
-        }
     }
 
     // So transmit FIFO isn't full, transmit the byte.
@@ -78,14 +79,11 @@ void uart_transmit(uint8_t byte)
 uint8_t uart_receive(void)
 {
     // Keep trying.
-    while(1)
+    while (1)
     {
         // If receive FIFO isn't empty, break.
-        if(!(*(volatile uint32_t*)(UART0_FR) & (1 << 4)))
-        {
-            // Break.
+        if (!(*(volatile uint32_t*)(UART0_FR) & (1 << 4)))
             break;
-        }
     }
 
     // So receive FIFO isn't empty, receive a byte.

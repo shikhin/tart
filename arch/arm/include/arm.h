@@ -1,3 +1,6 @@
+/*
+ * ARM related definitions.
+ */
 #ifndef _ARM_H
 #define _ARM_H
 

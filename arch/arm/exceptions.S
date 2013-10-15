@@ -1,3 +1,7 @@
+/*
+ * Exceptions support.
+ */
+
 #include <asm.h>
 #include <arm.h>
 
@@ -42,6 +46,8 @@
     rfeia sp!
 .endm
 
+#else
+    #error ARM versions below ARMv6 not supported yet.
 #endif
 
 /*

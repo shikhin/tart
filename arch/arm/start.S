@@ -1,3 +1,7 @@
+/*
+ * ARM entry point, and initialization code.
+ */
+
 #include <asm.h>
 #include <arm.h>
 
@@ -109,21 +113,21 @@ start:
     mov r11, r0
     mov r12, r0
 
-.bss_zero:
-    // Zero it out.
-    stmia r3!, {r5-r12}
+    .bss_zero:
+        // Zero it out.
+        stmia r3!, {r5-r12}
 
-    // If lower than end, continue.
-    cmp r3, r4
-    blt .bss_zero
+        // If lower than end, continue.
+        cmp r3, r4
+        blt .bss_zero
 
-    // Jump to init().
-    blx init
+        // Jump to init().
+        blx init
     
-// DON'T RETURN HERE.
-.halt:
-    wfe
-    b .halt
+    // DO NOT RETURN HERE.
+    .halt:
+        wfe
+        b .halt
 
 // Utility functions.
 
