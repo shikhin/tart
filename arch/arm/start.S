@@ -38,13 +38,13 @@ FUNCTION(_start)
     ldr pc, fiq
 
 reset:              .word start
-ud:                 .word stub
-swi:                .word stub
-prefetch_abort:     .word stub
-data_abort:         .word stub
-unused:             .word stub
-irq:                .word stub
-fiq:                .word stub
+ud:                 .word exception_ud
+swi:                .word exception_swi
+prefetch_abort:     .word exception_prefetch_abort
+data_abort:         .word exception_data_abort
+unused:             .word exception_unused
+irq:                .word exception_irq
+fiq:                .word exception_fiq
 
 start:
     // Move vectors to 0x00000000.
