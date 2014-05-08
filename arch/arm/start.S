@@ -15,33 +15,11 @@
 .section ".text.boot"
 
 /*
- * Basic architecture initialization (stacks and modes).
- */
-.macro BASIC_ARCH_INIT
-
-// For ARMv6 and above.
-#if ARMV >= 6
-    // Enable Imprecise Data Aborts, and switch to FIQ mode. 
-    cpsie a, #FIQ_MODE
-    ldr sp, =fiq_stack + (STACK_SIZE/4)
-
-    // Switch back to supervisor mode.
-    cps #SVC_MODE
-#endif
-
-.endm
-
-/*
  * Entry point for the kernel.
  *     r15 -> entry point.
  *     r0  -> 0x00000000.
  *     r1  -> machine type number.
  *     r2  -> start address of ATAGS.
- *
- * ARMv6:
- *     E bit in CPSR is 0 (little endian).
- *     EE (exception endian), A (alignment check) and B (big endian) bit in CP15 register 1 is 0.
- *     U (unaligned access) bit in CP15 register 1 is 1.
  */
 GLOBAL(_start)
 FUNCTION(_start)
@@ -69,20 +47,6 @@ irq:                .word stub
 fiq:                .word stub
 
 start:
-    // Read control register (register 1) from CP15.
-    mrc p15, 0, r3, c1, c0, 0
-
-#ifndef VECTORED_IRQ
-    // If vectored IRQs are not present, enable fixed IRQ vectors.
-    bic r3, #(1 << 24)
-#endif
-
-    // Enable low vectors.
-    bic r3, #(1 << 15)
-
-    // Write r3 back into CP15.
-    mcr p15, 0, r3, c1, c0, 0
-
     // Move vectors to 0x00000000.
     mov r3, r0
     ldr r4, =.vectors
@@ -94,62 +58,51 @@ start:
     ldmia r4!, {r5-r12}
     stmia r3!, {r5-r12}
 
-    // Setup the stack (for supervisor mode).
-    ldr sp, =stack + STACK_SIZE
+    .stack_init:
+#if ARMV >= 6
+        // Switch to FIQ mode. 
+        cpsid if, #FIQ_MODE
+        ldr sp, =fiq_stack + (STACK_SIZE)
 
-    BASIC_ARCH_INIT
+        cpsid if, #IRQ_MODE
+        ldr sp, =abort_stack + (STACK_SIZE)
+
+        cpsid if, #ABT_MODE
+        ldr sp, =abort_stack + (STACK_SIZE)
+
+        cpsid if, #UND_MODE
+        ldr sp, =abort_stack + (STACK_SIZE)
+
+        cpsid if, #SYS_MODE
+        ldr sp, =abort_stack + (STACK_SIZE)
+
+        cpsid if, #SVC_MODE
+        ldr sp, =abort_stack + (STACK_SIZE)
+#endif
 
     // Clear out bss.
     ldr r3, =bss_start
     ldr r4, =bss_end
 
-    // Clear out from r5 to r12.
-    mov r5, r0
-    mov r6, r0
-    mov r7, r0
-    mov r8, r0
-    mov r9, r0
-    mov r10, r0
-    mov r11, r0
-    mov r12, r0
-
     .bss_zero:
-        // Zero it out.
-        stmia r3!, {r5-r12}
-
         // If lower than end, continue.
         cmp r3, r4
+        strlt r0, [r3], #4
         blt .bss_zero
 
-        // Jump to init().
-        blx init
-    
+    // Jump to init().
+    blx init
+
     // DO NOT RETURN HERE.
-    .halt:
-        wfe
-        b .halt
-
-// Utility functions.
-
-/*
- * Create a delay for 'n' cycles.
- *     r0 -> the minimum number of cycles to delay for.
- */
-GLOBAL(delay)
-FUNCTION(delay)
-    // Subtract 1 and keep looping till not 0.
-    subs r0, r0, #1
-    bne delay
-
-    bx lr
+    b .
 
 // The stacks in the BSS section.
 .bss
 
-// Stack for supervisor mode.
-DATA(stack)
+// Stack for abort.
+DATA(abort_stack)
     .skip STACK_SIZE
 
-// Stack for FIQ (1/4th the standard stack size).
+// Stack for FIQ.
 DATA(fiq_stack)
-    .skip STACK_SIZE/4
+    .skip STACK_SIZE

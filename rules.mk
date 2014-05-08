@@ -10,7 +10,7 @@ endif
 
 # Get the tool prefix.
 ifeq ($(ARCH), arm)
-    TOOLPREFIX := $(PREFIX)/arm-none-eabi
+    TOOLPREFIX := $(PREFIX)/bin/arm-eabi
 
     HOSTCC := $(TOOLPREFIX)-gcc
     HOSTAS := $(TOOLPREFIX)-as

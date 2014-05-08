@@ -1,5 +1,5 @@
 # OUTELF and OUTBIN.
-OUTELF := hart
+OUTELF := tart
 OUTBIN := $(OUTELF).bin
 
 CCFLAGS ?= -O2
