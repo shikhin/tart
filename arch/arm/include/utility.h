@@ -1,9 +1,5 @@
-/*
- * Utility functions.
- */
-
-#ifndef _UTILITY_H
-#define _UTILITY_H
+#ifndef _ARM_UTILITY_H
+#define _ARM_UTILITY_H
 
 /*
  * Create a delay for 'n' cycles.
@@ -11,4 +7,4 @@
  */
 extern void delay(uint32_t n);
 
-#endif /* _UTILITY_H */
+#endif /* _ARM_UTILITY_H */

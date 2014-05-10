@@ -1,7 +1,3 @@
-/*
- * Exceptions support.
- */
-
 #include <asm.h>
 #include <arm.h>
 

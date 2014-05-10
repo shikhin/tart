@@ -1,12 +1,5 @@
-/*
- * UART handling code.
- */
-
 #include <uart.h>
 
-/*
- * Initializes the UART, making it available for communication.
- */
 void uart_init(void)
 {
     /*
@@ -52,10 +45,6 @@ void uart_init(void)
     */
 }
 
-/*
- * Transmit a byte via UART0.
- *    uint8_t byte.
- */
 void uart_transmit(uint8_t byte)
 {
     // Keep trying.
@@ -70,12 +59,6 @@ void uart_transmit(uint8_t byte)
     *(volatile uint32_t*)UART0_DR = byte;
 }
 
-/*
- * Receive a byte via UART0.
- *
- * Returns:
- *    uint8_t.
- */
 uint8_t uart_receive(void)
 {
     // Keep trying.

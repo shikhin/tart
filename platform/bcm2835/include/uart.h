@@ -1,9 +1,5 @@
-/*
- * UART related/handling definitions.
- */
-
-#ifndef _UART_H
-#define _UART_H
+#ifndef _BCM2835_UART_H
+#define _BCM2835_UART_H
 
 #include <stdint.h>
 #include <gpio.h>
@@ -50,4 +46,4 @@ void uart_transmit(uint8_t byte);
  */
 uint8_t uart_receive(void);
 
-#endif /* _UART_H */
+#endif /* _BCM2835_UART_H */

@@ -1,7 +1,3 @@
-/*
- * Linker file for ARM architecture.
- */
-
 ENTRY(_start)
 
 SECTIONS

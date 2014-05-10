@@ -1,9 +1,5 @@
-/*
- * GPIO related definitions.
- */
-
-#ifndef _GPIO_H
-#define _GPIO_H
+#ifndef _BCM2835_GPIO_H
+#define _BCM2835_GPIO_H
 
 // The GPIO registers base address.
 #define GPIO_BASE    0x20200000
@@ -16,4 +12,4 @@
 // Controls actuation of pull up/down for specific GPIO pin.
 #define GPPUDCLK0    (GPIO_BASE + 0x98)
 
-#endif /* _GPIO_H */
+#endif /* _BCM2835_GPIO_H */

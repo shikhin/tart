@@ -1,7 +1,3 @@
-/*
- * ARM entry point, and initialization code.
- */
-
 #include <asm.h>
 #include <arm.h>
 
