@@ -17,7 +17,6 @@
 #define IRQ_BASIC_DISABLE   0x224
 
 typedef void (*irq_handler_t)(irq_frame_t *);
-typedef void (*fiq_handler_t)(exception_frame_t *);
 
 /*
  * Enable a specific IRQ.
@@ -29,9 +28,16 @@ void platform_enable_irq(uint8_t vector, irq_handler_t handler);
 /*
  * Enable the FIQ.
  *     uint8_t vector -> the vector for FIQ defined as per FIQ sources.
- *     fiq_handler_t.
  */ 
-void platform_enable_fiq(uint8_t vector, fiq_handler_t handler);
+void platform_enable_fiq(uint8_t vector);
+
+void platform_fiq_handler(exception_frame_t *exception_frame);
+
+/*
+ * The platform IRQ handler.
+ *     irq_frame_t *irq_frame -> stack frame as passed by the exception handling glue.
+ */
+void platform_irq_handler(irq_frame_t *irq_frame);
 
 /*
  * Initializes the interrupt system.

@@ -78,9 +78,15 @@ FUNCTION(exception_unused)
 GLOBAL(exception_irq)
 FUNCTION(exception_irq)
     EXCEPTION_PROLOGUE 4, SVC_MODE, 1, 0
+
+    blx platform_irq_handler
+
     EXCEPTION_EPILOGUE 0
 
 GLOBAL(exception_fiq)
 FUNCTION(exception_fiq)
     EXCEPTION_PROLOGUE 4, FIQ_MODE, 0, 1
+
+    blx platform_fiq_handler
+
     EXCEPTION_EPILOGUE 1
