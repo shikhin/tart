@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include <compiler.h>
 
+static inline void arch_enable_irq()
+{ __asm__ volatile ("cpsie if"); }
+
 typedef struct
 {
     uint32_t r[4], r12, lr;

@@ -1,12 +1,14 @@
 #include <interrupts.h>
 #include <stdint.h>
 #include <mmio.h>
+#include <barrier.h>
 
 // Register 1, register 2, basic register -- 1 marks enabled source.
 static uint32_t irq_sources[3];
 static uint32_t fiq_source;
 
 static irq_handler_t irq_handlers[72];
+fiq_handler_t platform_fiq_handler;
 
 void platform_enable_irq(uint8_t vector, irq_handler_t handler)
 {
@@ -25,29 +27,29 @@ void platform_enable_irq(uint8_t vector, irq_handler_t handler)
     }
 
     if (!(irq_sources[reg] & (1 << vector))) {
+        data_memory_barrier();
         mmio_reg_write(reg_addr, 1 << vector);
         irq_sources[reg] &= (1 << vector);
     }
 }
 
-void platform_enable_fiq(uint8_t vector)
+void platform_enable_fiq(uint8_t vector, fiq_handler_t handler)
 {
     if (vector > 71)
         return;
 
-    vector &= (1 << 7);
+    platform_fiq_handler = handler;
+    vector |= (1 << 7);
 
     fiq_source = vector;
+
+    data_memory_barrier();
     mmio_reg_write(INTERRUPT_REG_BASE + FIQ_CONTROL, vector);
-}
-
-void platform_fiq_handler(exception_frame_t *exception_frame __UNUSED)
-{
-
 }
 
 void platform_irq_handler(irq_frame_t *irq_frame)
 {
+    data_memory_barrier();
     uint32_t pending_basic, pending[2];
     pending_basic = mmio_reg_read(INTERRUPT_REG_BASE + IRQ_BASIC_PENDING);
     pending[0] = mmio_reg_read(INTERRUPT_REG_BASE + IRQ_PENDING_1);
@@ -76,10 +78,12 @@ void platform_irq_handler(irq_frame_t *irq_frame)
                 }
         }
     }
+    data_memory_barrier();
 }
 
 void platform_interrupts_init()
 {
+    data_memory_barrier();
     // Disable FIQ.
     mmio_reg_write(INTERRUPT_REG_BASE + FIQ_CONTROL, 0x00000000);
 

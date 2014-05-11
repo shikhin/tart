@@ -87,6 +87,8 @@ GLOBAL(exception_fiq)
 FUNCTION(exception_fiq)
     EXCEPTION_PROLOGUE 4, FIQ_MODE, 0, 1
 
-    blx platform_fiq_handler
+    ldr r1, =platform_fiq_handler
+    ldr r1, [r1]
+    blx r1
 
     EXCEPTION_EPILOGUE 1

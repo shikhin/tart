@@ -43,6 +43,19 @@ irq:                .word exception_irq
 fiq:                .word exception_fiq
 
 start:
+    // Read control register 1 from CP15.
+    mrc p15, #0, r3, c1, c0, #0
+
+    // No MMU, no alignment fault checking, no data cache.
+    bic r3, #((1 << 0) | (1 << 1) | (1 << 2))
+    // No instruction cache, low vectors, loads to PC set the T bit.
+    bic r3, #((1 << 12) | (1 << 13) | (1 << 15))
+    // Fixed interrupt vector.
+    bic r3, #(1 << 24)
+
+    // Write it back.
+    mcr p15, #0, r3, c1, c0, #0
+
     // Move vectors to 0x00000000.
     mov r3, r0
     ldr r4, =.vectors
