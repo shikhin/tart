@@ -16,6 +16,16 @@
 #define IRQ_DISABLE_2       0x220
 #define IRQ_BASIC_DISABLE   0x224
 
+#define INTERRUPT_TIMER0    0
+#define INTERRUPT_TIMER1    1
+#define INTERRUPT_TIMER2    2
+#define INTERRUPT_TIMER3    3
+
+#define FIQ_TIMER0          (INTERRUPT_TIMER0)
+#define FIQ_TIMER1          (INTERRUPT_TIMER1)
+#define FIQ_TIMER2          (INTERRUPT_TIMER2)
+#define FIQ_TIMER3          (INTERRUPT_TIMER3)
+
 #define FIQ_ARM_TIMER       64
 
 typedef void (*irq_handler_t)(irq_frame_t *);
