@@ -1,6 +1,7 @@
 #include <mailbox.h>
 #include <mmio.h>
 #include <barrier.h>
+#include <kernel/timer.h>
 
 void mailbox_write(uint32_t data, uint8_t channel)
 {

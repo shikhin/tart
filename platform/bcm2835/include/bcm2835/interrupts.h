@@ -29,7 +29,7 @@
 #define FIQ_ARM_TIMER       64
 
 typedef void (*irq_handler_t)(irq_frame_t *);
-typedef void (*fiq_handler_t)(exception_frame_t *);
+typedef void (*fiq_handler_t)(irq_frame_t *);
 
 /*
  * Enable a specific IRQ.

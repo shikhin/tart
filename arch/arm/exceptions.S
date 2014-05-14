@@ -79,16 +79,36 @@ GLOBAL(exception_irq)
 FUNCTION(exception_irq)
     EXCEPTION_PROLOGUE 4, SVC_MODE, 1, 0
 
+    ldr r1, =critical_section_count
+    ldr r0, [r1]
+    add r0, r0, #1
+    str r0, [r1]
+
     blx platform_irq_handler
+
+    ldr r1, =critical_section_count
+    ldr r0, [r1]
+    sub r0, r0, #1
+    str r0, [r1]
 
     EXCEPTION_EPILOGUE 0
 
 GLOBAL(exception_fiq)
 FUNCTION(exception_fiq)
-    EXCEPTION_PROLOGUE 4, FIQ_MODE, 0, 1
+    EXCEPTION_PROLOGUE 4, FIQ_MODE, 0, 0
+
+    ldr r1, =critical_section_count
+    ldr r0, [r1]
+    add r0, r0, #1
+    str r0, [r1]
 
     ldr r1, =platform_fiq_handler
     ldr r1, [r1]
     blx r1
+
+    ldr r1, =critical_section_count
+    ldr r0, [r1]
+    sub r0, r0, #1
+    str r0, [r1]
 
     EXCEPTION_EPILOGUE 1

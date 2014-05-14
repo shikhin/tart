@@ -1,6 +1,6 @@
 #include <platform.h>
-#include <interrupts.h>
-#include <timer.h>
+#include <bcm2835/interrupts.h>
+#include <bcm2835/timer.h>
 
 void platform_init()
 {

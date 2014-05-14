@@ -11,8 +11,31 @@ typedef struct list_node
     struct list_node *prev, *next;
 } list_node_t;
 
-#define get_offset(type, member)            (uintptr_t)&((type*)0)->(member))
+#define get_offset(type, member)            (uintptr_t)&(((type*)0)->member)
 #define get_container(entry, type, member)  (type*)((uintptr_t)&(entry) - get_offset(type, member))
+
+#define EMPTY_LIST(name) { &name, &name }
+
+/*
+ * Initialize a list.
+ *     list_node_t *list -> list to initialize.
+ */
+static inline void list_init(list_node_t *list)
+{
+    list->prev = list->next = list;
+}
+
+/*
+ * Check whether a node is in a list.
+ *     const list_node_t *node.
+ *
+ * Returns:
+ *     bool.
+ */
+static inline bool list_in_list(const list_node_t *node)
+{
+    return !((node->prev == 0) || (node->next == 0));
+}
 
 /*
  * Internal implementation to add a new member.
@@ -117,17 +140,17 @@ static inline bool list_is_last(const list_node_t *list, const list_node_t *node
 }
 
 // Iterator.
-#define list_foreach(list, type, member, iterator) for(\
+#define list_foreach(list, type, member, iterator) for (\
                         (iterator) = get_container((list)->next, type, member); \
                         &(iterator)->member != (list); \
-                        (iterator) = get_container((iterator)->(member).next, type, member))
+                        (iterator) = get_container((iterator)->member.next, type, member))
 
 // Safe iterator.
-#define list_foreach_safe(list, type, member, iterator, temp_iter) for(\
+#define list_foreach_safe(list, type, member, iterator, temp_iter) for (\
                         (iterator) = get_container((list)->next, type, member), \
-                        (temp_iter) = get_container((iterator)->(member).next, type, member); \
+                        (temp_iter) = get_container((iterator)->member.next, type, member); \
                         &(iterator)->member != (list); \
                         (iterator) = (temp_iter), \
-                        (temp_iter) = get_container((iterator)->(member).next, type, member))
+                        (temp_iter) = get_container((iterator)->member.next, type, member))
 
 #endif /* _LIST_H */

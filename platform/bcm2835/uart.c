@@ -1,24 +1,12 @@
-#include <uart.h>
+#include <bcm2835/uart.h>
+#include <mmio.h>
 
 void uart_init(void)
 {
-    /*
     // Disable UART0.
-    MMIORegWrite(UART0_CR, 0x00000000);
+    mmio_reg_write(UART0_REG_BASE + UART0_CR, 0x00000000);
 
-    // Setup the GPIO pin 14 && 15.
-    
-    // Disable pull up/down for all GPIO pins & delay for 150 cycles.
-    MMIORegWrite(GPPUD, 0x00000000);
-    Delay(150);
-
-    // Disable pull up/down for pin 14,15 & delay for 150 cycles.
-    MMIORegWrite(GPPUDCLK0, (1 << 14) | (1 << 15));
-    Delay(150);
-
-    // Write 0 to GPPUDCLK0 to make it take effect.
-    MMIORegWrite(GPPUDCLK0, 0x00000000);
-    
+/* 
     // Clear pending interrupts.
     MMIORegWrite(UART0_ICR, 0x7FF);
 

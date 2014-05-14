@@ -1,4 +1,5 @@
-#include <interrupts.h>
+#include <exceptions.h>
+#include <bcm2835/interrupts.h>
 #include <stdint.h>
 #include <mmio.h>
 #include <barrier.h>
@@ -92,4 +93,6 @@ void platform_interrupts_init()
     mmio_reg_write(INTERRUPT_REG_BASE + IRQ_DISABLE_2, 0xFFFFFFFF);
     // Bits 31:8 are unused.
     mmio_reg_write(INTERRUPT_REG_BASE + IRQ_BASIC_DISABLE, 0xFF);
+
+    arch_enable_interrupts();
 }

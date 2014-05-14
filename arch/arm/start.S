@@ -105,6 +105,15 @@ start:
     // DO NOT RETURN HERE.
     b .
 
+GLOBAL(delay)
+FUNCTION(delay)
+    // Subtract 1 and keep looping till not 0.
+    subs r0, r0, #1
+    nop
+    bne delay
+
+    bx lr
+
 // The stacks in the BSS section.
 .bss
 

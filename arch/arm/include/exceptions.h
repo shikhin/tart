@@ -4,8 +4,11 @@
 #include <stdint.h>
 #include <compiler.h>
 
-static inline void arch_enable_irq()
+static inline void arch_enable_interrupts()
 { __asm__ volatile ("cpsie if"); }
+
+static inline void arch_disable_interrupts()
+{ __asm__ volatile ("cpsid if"); }
 
 typedef struct
 {

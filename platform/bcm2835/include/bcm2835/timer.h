@@ -2,6 +2,8 @@
 #define _BCM2835_TIMER_H
 
 #include <exceptions.h>
+#include <kernel/timer.h>
+#include <platform/timer.h>
 
 #define ARM_TIMER_REG_BASE     0x2000B000
 #define SYS_TIMER_REG_BASE     0x20003000
@@ -25,13 +27,6 @@
 #define SYS_TIMER_C3           0x18
 
 #define TIMER_CLOCK            1000000
-
-#define TIMER_FREQ             1000
-
-/*
- * The timer handler.
- */
-void timer_handler(exception_frame_t *exception_frame);
 
 /*
  * Init the timer.
