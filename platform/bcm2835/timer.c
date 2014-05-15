@@ -20,7 +20,7 @@ void platform_timer_handler(irq_frame_t *irq_frame_t __UNUSED)
 {
     data_memory_barrier();
 
-    timer_ticks++;
+    timer_tick(++timer_ticks);
 
     // Ack the IRQ.
     mmio_reg_write(SYS_TIMER_REG_BASE + SYS_TIMER_CS, (1 << 3));

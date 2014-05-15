@@ -25,6 +25,12 @@ typedef struct timer_list
 } timer_list_t;
 
 /*
+ * The timer tick function, gets called on timer IRQ.
+ *     timer_ticks_t now -> current ticks.
+ */
+void timer_tick(timer_ticks_t now);
+
+/*
  * Setup a timer.
  *     timer_list_t *timer -> empty time struct.
  *     timer_ticks_t expires -> ticks (ms) before it expires.
