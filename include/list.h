@@ -57,7 +57,7 @@ static inline list_node_t* list_get_head(const list_node_t *list)
             list_node_t *__node = list_get_head(list); \
             type *__instance; \
             if (__node) \
-                __instance = get_container(__instance, type, element); \
+                __instance = get_container(__node, type, element); \
             else \
                 __instance = (type *)0; \
             __instance; \
@@ -83,7 +83,7 @@ static inline list_node_t* list_get_tail(const list_node_t *list)
             list_node_t *__node = list_get_tail(list); \
             type *__instance; \
             if (__node) \
-                __instance = get_container(__instance, type, element); \
+                __instance = get_container(__node, type, element); \
             else \
                 __instance = (type *)0; \
             __instance; \
