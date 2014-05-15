@@ -29,30 +29,31 @@ static void timer_enqueue(timer_list_t *timer, timer_ticks_t now)
 
 void timer_tick(timer_ticks_t now)
 {
-    timer_list_t *iterator, *temp_iter;
-    list_foreach_safe(&timer_list_rollover, timer_list_t, node, iterator, temp_iter) {
-        if (iterator->scheduled_expiry < now)
+    for(;;) {
+        timer_list_t *head = list_get_head_type(&timer_list_rollover, timer_list_t, node);
+        if (!head || (head->scheduled_expiry < now))
             break;
 
-        list_delete(&iterator->node);
-        timer_enqueue(iterator, now);
+        list_delete(&head->node);
+        timer_enqueue(head, now);
     }
 
-    list_foreach_safe(&timer_list, timer_list_t, node, iterator, temp_iter) {
-        if (iterator->scheduled_expiry > now)
+    for(;;) {
+        timer_list_t *head = list_get_head_type(&timer_list, timer_list_t, node);
+        if (!head || (head->scheduled_expiry > now))
             break;
 
-        list_delete(&iterator->node);
-        iterator->periods_expired++;
+        list_delete(&head->node);
+        head->periods_expired++;
 
         // If null, no callback.
-        if(iterator->callback)
-            iterator->callback(iterator, now, iterator->argument);
+        if(head->callback)
+            head->callback(head, now, head->argument);
 
         // Is periodic?
-        if (iterator->period) {
-            iterator->scheduled_expiry = now + iterator->period;
-            timer_enqueue(iterator, now);
+        if (head->period) {
+            head->scheduled_expiry = now + head->period;
+            timer_enqueue(head, now);
         }
     }
 }

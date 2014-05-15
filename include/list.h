@@ -12,7 +12,7 @@ typedef struct list_node
 } list_node_t;
 
 #define get_offset(type, member)            (uintptr_t)&(((type*)0)->member)
-#define get_container(entry, type, member)  (type*)((uintptr_t)&(entry) - get_offset(type, member))
+#define get_container(entry, type, member)  (type*)((uintptr_t)(entry) - get_offset(type, member))
 
 #define EMPTY_LIST(name) { &name, &name }
 
@@ -36,6 +36,58 @@ static inline bool list_in_list(const list_node_t *node)
 {
     return !((node->prev == 0) || (node->next == 0));
 }
+
+/*
+ * Get list head.
+ *     const list_node_t *list -> list.
+ *
+ * Returns:
+ *     list_node_t*.
+ */
+static inline list_node_t* list_get_head(const list_node_t *list)
+{
+    if (list->next != list) {
+        return list->next;
+    } else {
+        return 0;
+    }
+}
+
+#define list_get_head_type(list, type, element) ({ \
+            list_node_t *__node = list_get_head(list); \
+            type *__instance; \
+            if (__node) \
+                __instance = get_container(__instance, type, element); \
+            else \
+                __instance = (type *)0; \
+            __instance; \
+        })
+
+/*
+ * Get list tail.
+ *     const list_node_t *list -> list.
+ *
+ * Returns:
+ *     list_node_t*.
+ */
+static inline list_node_t* list_get_tail(const list_node_t *list)
+{
+    if (list->prev != list) {
+        return list->prev;
+    } else {
+        return 0;
+    }
+}
+
+#define list_get_tail_type(list, type, element) ({ \
+            list_node_t *__node = list_get_tail(list); \
+            type *__instance; \
+            if (__node) \
+                __instance = get_container(__instance, type, element); \
+            else \
+                __instance = (type *)0; \
+            __instance; \
+        })
 
 /*
  * Internal implementation to add a new member.

@@ -39,12 +39,12 @@ void uart_transmit(uint8_t byte)
     while (1)
     {
         // If transmit FIFO isn't full.
-        if (!(*(volatile uint32_t*)(UART0_FR) & (1 << 5)))
+        if (!(*(volatile uint32_t*)(UART0_REG_BASE + UART0_FR) & (1 << 5)))
             break;
     }
 
     // So transmit FIFO isn't full, transmit the byte.
-    *(volatile uint32_t*)UART0_DR = byte;
+    *(volatile uint32_t*)(UART0_REG_BASE + UART0_DR) = byte;
 }
 
 uint8_t uart_receive(void)
@@ -53,10 +53,10 @@ uint8_t uart_receive(void)
     while (1)
     {
         // If receive FIFO isn't empty, break.
-        if (!(*(volatile uint32_t*)(UART0_FR) & (1 << 4)))
+        if (!(*(volatile uint32_t*)(UART0_REG_BASE + UART0_FR) & (1 << 4)))
             break;
     }
 
     // So receive FIFO isn't empty, receive a byte.
-    return (*(volatile uint32_t*)(UART0_DR));
+    return (*(volatile uint32_t*)(UART0_REG_BASE + UART0_DR));
 }
