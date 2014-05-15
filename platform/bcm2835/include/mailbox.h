@@ -25,6 +25,8 @@
 
 #define MAILBOX_SUCCESS 0x80000000
 
+#define MAILBOX_TIMEOUT 100
+
 /*
  * Synchronously write to the mailbox.
  *     uint32_t data.
