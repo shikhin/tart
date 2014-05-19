@@ -43,7 +43,6 @@ uint32_t mailbox_read(uint8_t channel)
     data_memory_barrier();
     uint32_t data;
     do {
-
         timer_list_t timer;
         timer_setup(&timer, MAILBOX_TIMEOUT, 0, mailbox_read_timeout, 0);
 
